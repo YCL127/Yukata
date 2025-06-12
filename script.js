@@ -5,94 +5,94 @@ const defaultQuestions = [
     {
         question: "哪種動物以其長脖子而聞名？",
         answer: "長頸鹿",
-        points: 100,
+        points: 10, // 原 100
         type: 'normal_question'
     },
     {
         question: "地球上最大的海洋是什麼？",
         answer: "太平洋",
-        points: 200,
+        points: 20, // 原 200
         type: 'normal_question'
     },
     {
         question: "哪個國家有金字塔？",
         answer: "埃及",
-        points: 150,
+        points: 15, // 原 150
         type: 'normal_question'
     },
     {
         question: "水的化學式是什麼？",
         answer: "H2O",
-        points: 250,
+        points: 25, // 原 250
         type: 'normal_question'
     },
     {
         question: "太陽系的第四顆行星是什麼？",
         answer: "火星",
-        points: 100,
+        points: 10, // 原 100
         type: 'normal_question'
     },
     {
         question: "誰畫了蒙娜麗莎？",
         answer: "達文西",
-        points: 200,
+        points: 20, // 原 200
         type: 'normal_question'
     },
     {
         question: "世界上最高的山是哪座？",
         answer: "珠穆朗瑪峰",
-        points: 300,
+        points: 30, // 原 300
         type: 'normal_question'
     },
     {
         question: "什麼是光合作用的產物？",
         answer: "氧氣",
-        points: 150,
+        points: 15, // 原 150
         type: 'normal_question'
     },
     {
         question: "哪種水果是紅色的，有一個綠色的莖？",
         answer: "蘋果",
-        points: 100,
+        points: 10, // 原 100
         type: 'normal_question'
     },
     {
         question: "鳥類有骨頭嗎？",
         answer: "是",
-        points: 50,
+        points: 5, // 原 50
         type: 'normal_question'
     },
     {
         question: "貓是哺乳動物嗎？",
         answer: "是",
-        points: 50,
+        points: 5, // 原 50
         type: 'normal_question'
     },
     {
         question: "所有植物都開花嗎？",
         answer: "否",
-        points: 50,
+        points: 5, // 原 50
         type: 'normal_question'
     },
     {
         question: "企鵝會飛嗎？",
         answer: "否",
-        points: 50,
+        points: 5, // 原 50
         type: 'normal_question'
     },
     // 事件卡範例，確保 points 屬性正確，即使為 0
     {
         question: "事件卡", // 統一事件卡在遊戲板上顯示的標題
-        event_description: "全體玩家各加 50 分",
+        event_description: "全體玩家各加 5 分", // 描述也同步調整
         event_type: "add_score_all_players",
-        points: 50, // 這裡設定分數
+        points: 5, // 原 50
         type: 'event_card'
     },
     {
         question: "事件卡",
-        event_description: "當前玩家失去 100 分",
+        event_description: "當前玩家失去 10 分", // 描述也同步調整
         event_type: "deduct_score",
-        points: -100, // 這裡設定分數，為負數
+        points: -10, // 原 -100
         type: 'event_card'
     },
     {
@@ -450,9 +450,9 @@ function handleEventCard(eventCard) {
         case 'deduct_score':
             if (typeof eventCard.points === 'number') {
                 // 確保 eventCard.points 是負值或會被當作負值處理
-                const deduction = Math.abs(eventCard.points) * -1;
-                players[currentPlayerIndex].score += deduction;
-                eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 失去 ${Math.abs(deduction)} 分！`;
+                const deduction = Math.abs(eventCard.points); // 這裡取絕對值是因為在定義時就已經是負數
+                players[currentPlayerIndex].score -= deduction; // 直接減去
+                eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 失去 ${deduction} 分！`;
             } else {
                 eventFeedback = `事件卡分數設定錯誤：${eventCard.event_description}`;
                 console.error("事件卡分數設定錯誤:", eventCard);
@@ -482,12 +482,12 @@ function handleEventCard(eventCard) {
             eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 的 ${transferredScore} 分轉移給 ${players[nextPlayerIndex].name}！`;
             break;
         case 'random_bonus':
-            const bonusPoints = Math.floor(Math.random() * 200) + 50; // 50 到 249
+            const bonusPoints = Math.floor(Math.random() * 20) + 5; // 5 到 24 (原 50 到 249)
             players[currentPlayerIndex].score += bonusPoints;
             eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 獲得隨機獎勵 ${bonusPoints} 分！`;
             break;
         case 'random_penalty':
-            const penaltyPoints = Math.floor(Math.random() * 100) + 20; // 20 到 119
+            const penaltyPoints = Math.floor(Math.random() * 10) + 2; // 2 到 11 (原 20 到 119)
             players[currentPlayerIndex].score -= penaltyPoints;
             eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 失去隨機懲罰 ${penaltyPoints} 分！`;
             break;
@@ -679,7 +679,7 @@ function toggleQuestionFields() {
     // 重置新增題目表單的輸入框
     if (newQuestionTextNormal) newQuestionTextNormal.value = '';
     if (newAnswerText) newAnswerText.value = '';
-    if (newPoints) newPoints.value = 100;
+    if (newPoints) newPoints.value = 10; // 預設分數也改為 10
     if (eventQuestionText) eventQuestionText.value = '';
     // eventTypeSelect.value = eventTypes[0].value; // 可以選擇重置為第一個事件類型
 }
@@ -735,14 +735,14 @@ function addQuestionToQuizButtonClickHandler() {
 
         let points = 0;
         if (eventType === 'add_score_current_player' || eventType === 'add_score_all_players') {
-             const eventPointsInput = prompt(`請輸入此事件卡加分的分數 (請輸入正數):`, 50);
+             const eventPointsInput = prompt(`請輸入此事件卡加分的分數 (請輸入正數):`, 5); // 預設值改為 5
              if (eventPointsInput === null || isNaN(parseInt(eventPointsInput)) || parseInt(eventPointsInput) <= 0) {
                  alert('請輸入有效的正數分數。');
                  return;
              }
              points = parseInt(eventPointsInput);
         } else if (eventType === 'deduct_score') {
-             const eventPointsInput = prompt(`請輸入此事件卡扣分的分數 (請輸入正數，將自動轉為負數):`, 50);
+             const eventPointsInput = prompt(`請輸入此事件卡扣分的分數 (請輸入正數，將自動轉為負數):`, 5); // 預設值改為 5
              if (eventPointsInput === null || isNaN(parseInt(eventPointsInput)) || parseInt(eventPointsInput) <= 0) {
                  alert('請輸入有效的正數分數。');
                  return;
@@ -760,7 +760,7 @@ function addQuestionToQuizButtonClickHandler() {
     alert('題目已新增到當前題庫！');
     if (newQuestionTextNormal) newQuestionTextNormal.value = '';
     if (newAnswerText) newAnswerText.value = '';
-    if (newPoints) newPoints.value = 100;
+    if (newPoints) newPoints.value = 10; // 預設分數也改為 10
     if (eventQuestionText) eventQuestionText.value = '';
     questions = quizSets[currentQuizName];
 }
