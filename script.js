@@ -288,10 +288,10 @@ function openQuestionModal(card, question, index) {
     currentQuestionCard = card;
 
     // 重置彈窗狀態和隱藏所有不相關的元素
-    if (showAnswerButton) showAnswerButton.style.display = 'none';
+    if (showAnswerButton) showAnswerButton.style.display = 'none'; // 預設隱藏顯示答案按鈕
     if (correctAnswerDisplay) correctAnswerDisplay.style.display = 'none';
     if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none';
-    if (multipleChoiceOptionsDiv) multipleChoiceOptionsDiv.style.display = 'none'; // 隱藏選擇題選項
+    if (multipleChoiceOptionsDiv) multipleChoiceOptionsDiv.style.display = 'none'; // 預設隱藏選擇題選項
     if (feedbackDiv) {
         feedbackDiv.textContent = '';
     }
@@ -329,21 +329,23 @@ function openQuestionModal(card, question, index) {
         }
         if (multipleChoiceOptionsDiv) {
             multipleChoiceOptionsDiv.style.display = 'flex'; // 顯示選項按鈕容器
-            mcOptionButtons.forEach((button, index) => {
-                button.textContent = question.options[index];
+            mcOptionButtons.forEach((button, i) => {
+                button.textContent = question.options[i];
                 button.style.display = 'block'; // 確保按鈕顯示
-                button.classList.remove('selected'); // 清除上次的選中狀態
-                button.onclick = () => selectMultipleChoiceOption(button, index); // 綁定點擊事件
+                button.classList.remove('selected', 'correct-option', 'answered-option'); // 清除所有狀態
+                button.onclick = () => handleMultipleChoiceSelection(button, i); // 綁定點擊事件，直接判斷
             });
         }
-        if (showAnswerButton) showAnswerButton.style.display = 'block'; // 選擇題依然可以顯示答案
+        // 選擇題不顯示「顯示答案」按鈕和「正確」「錯誤」按鈕
+        if (showAnswerButton) showAnswerButton.style.display = 'none';
+        if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none';
         confirmEventButton.style.display = 'none';
         if (confirmEventButton) confirmEventButton.onclick = null;
-    } else { // normal_question
+    } else { // normal_question (普通問題)
         if (questionText) {
             questionText.textContent = question.question;
         }
-        if (showAnswerButton) showAnswerButton.style.display = 'block';
+        if (showAnswerButton) showAnswerButton.style.display = 'block'; // 普通問題顯示顯示答案按鈕
         if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none'; // 普通問題的判斷按鈕在顯示答案後才顯示
         confirmEventButton.style.display = 'none';
         if (confirmEventButton) confirmEventButton.onclick = null;
@@ -358,49 +360,60 @@ function openQuestionModal(card, question, index) {
     }
 }
 
-// 選擇題選項點擊處理
-function selectMultipleChoiceOption(button, selectedIndex) {
+// 處理選擇題選項的點擊 (直接判斷並給予回饋)
+function handleMultipleChoiceSelection(button, selectedIndex) {
     if (!activeQuestionData || activeQuestionData.type !== 'multiple_choice') return;
 
-    // 移除所有按鈕的選中狀態
-    mcOptionButtons.forEach(btn => btn.classList.remove('selected'));
-    // 為當前選中的按鈕添加選中狀態
-    button.classList.add('selected');
+    // 禁用所有選項按鈕，防止重複點擊
+    mcOptionButtons.forEach(btn => {
+        btn.onclick = null;
+        btn.classList.add('answered-option'); // 添加樣式表明已作答
+    });
 
-    // 立即判斷，而不是等顯示答案後再判斷
     const isCorrect = (selectedIndex === activeQuestionData.correct_answer_index);
-    handleMultipleChoiceJudgment(isCorrect, activeQuestionData.options[activeQuestionData.correct_answer_index]);
+    let scoreChange = 0;
+    let feedbackMessage = '';
+
+    const correctAnswerText = activeQuestionData.options[activeQuestionData.correct_answer_index];
+
+    if (isCorrect) {
+        scoreChange = activeQuestionData.points;
+        feedbackMessage = `選擇正確！獲得 ${scoreChange} 分！`;
+        if (feedbackDiv) { feedbackDiv.style.color = 'green'; }
+        button.classList.add('correct-option'); // 高亮選中的正確選項
+    } else {
+        scoreChange = 0; // 選擇題答錯不扣分
+        feedbackMessage = `選擇錯誤！正確答案是：${correctAnswerText}`;
+        if (feedbackDiv) { feedbackDiv.style.color = 'red'; }
+        button.classList.add('incorrect-option'); // 高亮選中的錯誤選項 (可以為這個添加 CSS)
+        // 同時高亮正確答案
+        if (mcOptionButtons[activeQuestionData.correct_answer_index]) {
+             mcOptionButtons[activeQuestionData.correct_answer_index].classList.add('correct-option');
+        }
+    }
+
+    players[currentPlayerIndex].score += scoreChange;
+    if (feedbackDiv) {
+        feedbackDiv.textContent = feedbackMessage;
+    }
+    updatePlayerScores();
+    markCardAsAnswered(currentQuestionCard);
+    closeQuestionModalWithDelay(); // 自動延遲關閉並切換玩家
 }
 
-// 顯示答案 (對於普通問題和選擇題)
+
+// 顯示答案 (僅適用於普通問題)
 function showAnswer(question) {
-    if (showAnswerButton) showAnswerButton.style.display = 'none';
-
-    if (question.type === 'multiple_choice') {
-        const correctOptionText = question.options[question.correct_answer_index];
-        if (correctAnswerDisplay) correctAnswerDisplay.textContent = `正確答案：${correctOptionText}`;
-        // 給正確選項按鈕添加視覺提示
-        if (mcOptionButtons) {
-            mcOptionButtons.forEach((button, index) => {
-                if (index === question.correct_answer_index) {
-                    button.classList.add('correct-option'); // 添加一個 CSS 類來標記正確答案
-                }
-                button.classList.add('answered-option'); // 標記為已回答，禁用點擊
-                button.onclick = null; // 移除點擊事件
-            });
-        }
-        // 選擇題顯示答案後不顯示「正確」「錯誤」按鈕，因為已經自動判斷
-        if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none';
-
-    } else { // normal_question
+    if (question.type === 'normal_question') {
+        if (showAnswerButton) showAnswerButton.style.display = 'none';
         if (correctAnswerDisplay) correctAnswerDisplay.textContent = `答案：${question.answer}`;
+        if (correctAnswerDisplay) correctAnswerDisplay.style.display = 'block';
         if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'flex'; // 普通問題顯示判斷按鈕
+        if (feedbackDiv) {
+            feedbackDiv.textContent = '';
+        }
     }
-
-    if (correctAnswerDisplay) correctAnswerDisplay.style.display = 'block';
-    if (feedbackDiv) {
-        feedbackDiv.textContent = ''; // 清除舊的提示
-    }
+    // 選擇題不再通過此函數顯示答案，直接在 handleMultipleChoiceSelection 處理
 }
 
 // 處理普通問題的正確/錯誤判斷
@@ -426,31 +439,6 @@ function handlePlayerJudgment(isCorrect) {
     markCardAsAnswered(currentQuestionCard);
     closeQuestionModalWithDelay();
 }
-
-// 處理選擇題的判斷 (自動判斷)
-function handleMultipleChoiceJudgment(isCorrect, correctAnswerText) {
-    let scoreChange = 0;
-    let feedbackMessage = '';
-
-    if (isCorrect) {
-        scoreChange = activeQuestionData.points;
-        feedbackMessage = `選擇正確！獲得 ${scoreChange} 分！`;
-        if (feedbackDiv) { feedbackDiv.style.color = 'green'; }
-    } else {
-        scoreChange = 0; // 選擇題答錯不扣分
-        feedbackMessage = `選擇錯誤！正確答案是：${correctAnswerText}`;
-        if (feedbackDiv) { feedbackDiv.style.color = 'red'; }
-    }
-
-    players[currentPlayerIndex].score += scoreChange;
-    if (feedbackDiv) {
-        feedbackDiv.textContent = feedbackMessage;
-    }
-    updatePlayerScores();
-    markCardAsAnswered(currentQuestionCard);
-    closeQuestionModalWithDelay();
-}
-
 
 // 處理事件卡的核心邏輯
 function handleEventCard(eventCard) {
@@ -529,7 +517,7 @@ function markCardAsAnswered(card) {
     checkGameOver();
 }
 
-// 延遲關閉問題彈窗並切換玩家 (用於普通題目和選擇題)
+// 延遲關閉問題彈窗並切換玩家
 function closeQuestionModalWithDelay() {
     setTimeout(() => {
         closeQuestionModal();
@@ -549,11 +537,11 @@ function closeQuestionModal() {
             if (feedbackDiv) {
                 feedbackDiv.textContent = '';
             }
-            if (multipleChoiceOptionsDiv) {
+            if (multipleChoiceOptionsDiv) { // 重置選擇題選項按鈕狀態
                 multipleChoiceOptionsDiv.style.display = 'none';
                 mcOptionButtons.forEach(button => {
-                    button.classList.remove('selected', 'correct-option', 'answered-option');
-                    button.textContent = ''; // 清空按鈕內容
+                    button.classList.remove('selected', 'correct-option', 'answered-option', 'incorrect-option'); // 清除所有相關樣式
+                    button.textContent = '';
                     button.onclick = null; // 移除事件監聽
                 });
             }
@@ -646,7 +634,7 @@ function resetGame() {
         questionModal.classList.remove('show-modal');
     }
     if (questionText) questionText.textContent = '';
-    if (showAnswerButton) showAnswerButton.style.display = 'block';
+    if (showAnswerButton) showAnswerButton.style.display = 'block'; // 預設普通問題顯示
     if (correctAnswerDisplay) correctAnswerDisplay.style.display = 'none';
     if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none';
     if (feedbackDiv) {
@@ -655,7 +643,7 @@ function resetGame() {
     if (multipleChoiceOptionsDiv) { // 重置選擇題選項按鈕
         multipleChoiceOptionsDiv.style.display = 'none';
         mcOptionButtons.forEach(button => {
-            button.classList.remove('selected', 'correct-option', 'answered-option');
+            button.classList.remove('selected', 'correct-option', 'answered-option', 'incorrect-option'); // 清除所有相關樣式
             button.textContent = '';
             button.onclick = null;
         });
@@ -724,7 +712,6 @@ function toggleQuestionFields() {
 
 // 處理新增題目按鈕點擊
 function addQuestionToQuizButtonClickHandler() {
-    // 再次檢查所有必要的 UI 元素是否已獲取
     if (!questionTypeSelect || !newPoints || !newPointsMC || !eventTypeSelect) {
         console.error("addQuestionToQuizButtonClickHandler: 新增題目所需的 UI 元素未完全初始化。");
         return;
@@ -746,8 +733,7 @@ function addQuestionToQuizButtonClickHandler() {
             return;
         }
         newQuestion.question = qText;
-        // 普通問題不再有獨立的答案輸入框，答案在判斷時才處理
-        newQuestion.answer = ""; // 或您可以彈出一個框讓用戶輸入標準答案以供顯示，但現在假定由判斷按鈕決定
+        newQuestion.answer = ""; // 普通問題的答案不會在新增時設定，而是在遊戲中判斷
         newQuestion.points = points;
     } else if (selectedType === 'multiple_choice') {
         const qText = newQuestionTextMC.value.trim();
@@ -860,7 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 不同題目類型輸入框容器
     normalQuestionFields = document.getElementById('normal-question-fields');
-    multipleChoiceFields = document.getElementById('multiple-choice-fields'); // 新增
+    multipleChoiceFields = document.getElementById('multiple-choice-fields');
     eventCardFields = document.getElementById('event-card-fields');
 
     // 普通問題輸入框
@@ -882,8 +868,8 @@ document.addEventListener('DOMContentLoaded', () => {
     addQuestionToQuizButton = document.getElementById('add-question-to-quiz-button');
 
     // 模態框內的選擇題選項按鈕
-    multipleChoiceOptionsDiv = document.getElementById('multiple-choice-options'); // 新增
-    mcOptionButtons = document.querySelectorAll('.mc-option-button'); // 新增
+    multipleChoiceOptionsDiv = document.getElementById('multiple-choice-options');
+    mcOptionButtons = document.querySelectorAll('.mc-option-button');
 
     // 新增的匯入匯出按鈕獲取
     importQuizButton = document.getElementById('import-quiz-button');
@@ -901,7 +887,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("DOMContentLoaded 內初始化 feedbackDiv:", feedbackDiv);
     console.log("DOMContentLoaded 內初始化 addQuizButton:", addQuizButton);
     console.log("DOMContentLoaded 內初始化 multipleChoiceOptionsDiv:", multipleChoiceOptionsDiv);
-    console.log("DOMContentLoaded 內初始化 mcOptionButtons:", mcOptionButtons);
+    console.log("DOMContentLoaded 內初始化 mcOptionButtons (NodeList):", mcOptionButtons);
 
 
     // 將所有事件監聽器放在這裡，確保相關元素已經被獲取
@@ -924,11 +910,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 顯示答案按鈕，對於普通問題和選擇題都有效
+    // 顯示答案按鈕，僅適用於普通問題
     if (showAnswerButton) {
         showAnswerButton.addEventListener('click', () => {
-            if (activeQuestionData) {
+            // 只在當前是普通問題時才執行 showAnswer
+            if (activeQuestionData && activeQuestionData.type === 'normal_question') {
                 showAnswer(activeQuestionData);
+            } else {
+                // 如果是選擇題，點擊此按鈕應該無效或給予提示
+                console.log("選擇題不需要顯示答案按鈕。");
+                // 可以在這裡添加一個簡短的提示，例如 feedbackDiv.textContent = '請直接點擊選項作答！';
             }
         });
     }
@@ -957,9 +948,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('請點擊「確定」按鈕來處理事件卡效果。');
                 return;
             } else {
-                closeQuestionModal();
-                if (activeQuestionData && (activeQuestionData.type === 'normal_question' || activeQuestionData.type === 'multiple_choice')) {
-                    moveToNextPlayer();
+                // 對於普通問題和選擇題，這裡的關閉應該由遊戲邏輯控制，而非直接點擊關閉
+                // 如果因為某些原因需要手動關閉，可以這樣判斷：
+                if (!currentQuestionCard.classList.contains('answered')) {
+                     // 只有在還沒作答時才允許手動關閉，並切換玩家
+                     closeQuestionModal();
+                     moveToNextPlayer();
+                     alert("您關閉了問題，請記得下次作答！"); // 提示玩家
+                } else {
+                    closeQuestionModal(); // 如果已作答，直接關閉即可
                 }
             }
         });
@@ -1030,7 +1027,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     reader.onload = event => {
                         try {
                             const importedQuestions = JSON.parse(event.target.result);
-                            // 匯入時需要確認格式是否包含 multiple_choice 的結構
                             const isValidFormat = Array.isArray(importedQuestions) && importedQuestions.every(q => {
                                 if (q.type === 'normal_question') {
                                     return 'question' in q && 'answer' in q && 'points' in q;
