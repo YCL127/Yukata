@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>分組答題遊戲</title>
+    <title>2025 分組答題遊戲</title>
     <link rel="stylesheet" href="style.css">
-    </head>
+</head>
 <body>
     <header>
-        <h1>分組答題遊戲</h1>
+        <h1>2025 分組答題遊戲</h1>
     </header>
 
     <main>
@@ -43,6 +43,7 @@
                         <label for="question-type-select">題目類型:</label>
                         <select id="question-type-select">
                             <option value="normal_question">普通問題</option>
+                            <option value="multiple_choice">選擇題</option> // 新增選擇題選項
                             <option value="event_card">事件卡</option>
                         </select>
                     </div>
@@ -53,12 +54,39 @@
                             <input type="text" id="new-question-text-normal" placeholder="輸入問題">
                         </div>
                         <div class="setting-item">
-                            <label for="new-answer-text">答案:</label>
-                            <input type="text" id="new-answer-text" placeholder="輸入答案">
+                            <label for="new-points">分數:</label>
+                            <input type="number" id="new-points" min="1" value="10">
+                        </div>
+                    </div>
+
+                    <div id="multiple-choice-fields" style="display: none;"> // 新增選擇題輸入區塊
+                        <div class="setting-item">
+                            <label for="new-question-text-mc">問題內容:</label>
+                            <input type="text" id="new-question-text-mc" placeholder="輸入選擇題問題">
                         </div>
                         <div class="setting-item">
-                            <label for="new-points">分數:</label>
-                            <input type="number" id="new-points" min="1" value="100">
+                            <label for="mc-option-1">選項 1:</label>
+                            <input type="text" id="mc-option-1" placeholder="選項 1">
+                        </div>
+                        <div class="setting-item">
+                            <label for="mc-option-2">選項 2:</label>
+                            <input type="text" id="mc-option-2" placeholder="選項 2">
+                        </div>
+                        <div class="setting-item">
+                            <label for="mc-option-3">選項 3:</label>
+                            <input type="text" id="mc-option-3" placeholder="選項 3">
+                        </div>
+                        <div class="setting-item">
+                            <label for="mc-option-4">選項 4:</label>
+                            <input type="text" id="mc-option-4" placeholder="選項 4">
+                        </div>
+                        <div class="setting-item">
+                            <label for="mc-correct-answer-index">正確答案 (選項編號):</label>
+                            <input type="number" id="mc-correct-answer-index" min="1" max="4" value="1" placeholder="輸入正確選項編號 (1-4)">
+                        </div>
+                         <div class="setting-item">
+                            <label for="new-points-mc">分數:</label>
+                            <input type="number" id="new-points-mc" min="1" value="10">
                         </div>
                     </div>
 
@@ -83,7 +111,7 @@
                 <div id="player-scores">
                     </div>
             </div>
-            
+
             <div id="game-board">
                 </div>
 
@@ -91,6 +119,12 @@
                 <div class="modal-content">
                     <span class="close-button">&times;</span>
                     <h2 id="question-text"></h2>
+                    <div id="multiple-choice-options" style="display: none;">
+                        <button class="mc-option-button" data-option-index="0"></button>
+                        <button class="mc-option-button" data-option-index="1"></button>
+                        <button class="mc-option-button" data-option-index="2"></button>
+                        <button class="mc-option-button" data-option-index="3"></button>
+                    </div>
                     <button id="show-answer-button">顯示答案</button>
                     <p id="correct-answer-display" style="display: none;"></p>
                     <div class="judgment-buttons" style="display: none;">
@@ -104,7 +138,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 分組答題遊戲</p>
+        <p>&copy;2025 分組答題遊戲</p>
     </footer>
 
     <div id="final-score-modal" class="modal">
