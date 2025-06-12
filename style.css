@@ -487,6 +487,8 @@ footer {
     .button-group {
         flex-direction: column;
         gap: 10px;
+        /* 新增：在 column 佈局下水平置中項目 */
+        align-items: center; 
     }
 
     #game-board {
