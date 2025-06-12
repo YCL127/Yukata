@@ -307,14 +307,16 @@ button:disabled {
     margin-bottom: 20px;
 }
 
+/* 針對 #add-question-to-quiz-section 內部的設定項目 */
 #add-question-to-quiz-section .setting-item {
     flex-direction: column; /* 讓新增題目部分的設定項目垂直排列 */
-    align-items: flex-start;
+    align-items: flex-start; /* 靠左對齊 */
     margin-bottom: 20px;
 }
 
 #add-question-to-quiz-section .setting-item label {
     margin-bottom: 8px;
+    width: auto; /* 確保不佔滿整行，除非在手機版 */
 }
 
 #add-question-to-quiz-section .setting-item input[type="text"],
@@ -448,6 +450,15 @@ footer {
         max-width: 95%; /* 小螢幕上佔用更多寬度 */
     }
 
+    /* 確保所有 input, select, textarea 在小螢幕下都有適當的內邊距和字體大小 */
+    input[type="number"],
+    select,
+    input[type="text"],
+    textarea {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
     /* 設定項目中的 label, input, select 在小螢幕下應該垂直排列並各佔 100% 寬度 */
     .setting-item {
         flex-direction: column; /* 讓項目垂直排列 */
@@ -466,7 +477,6 @@ footer {
     .setting-item input[type="text"],
     .setting-item textarea {
         width: 100%; /* 在小螢幕下佔用 100% 寬度 */
-        /* margin-top: 5px; - 如果有 gap，可以考慮移除 */
     }
 
     button, .button {
@@ -516,31 +526,21 @@ footer {
     }
 }
 
-/* ===== 針對設定項目中輸入框的特殊處理 (大螢幕下) ===== */
-/* 確保設定項目的輸入框在非手機螢幕下有合適的寬度，且能與 Label 對齊 */
-.setting-item:not([id^="add-question-to-quiz-section"]) input[type="number"],
-.setting-item:not([id^="add-question-to-quiz-section"]) select,
-.setting-item:not([id^="add-question-to-quiz-section"]) input[type="text"] {
-    /* 設定一個適中的固定寬度，讓它不會過寬或過窄 */
-    width: 150px; /* 您可以調整這個值 */
+/* ===== 針對「遊戲設定」區塊中輸入框的特殊處理 (非手機螢幕) ===== */
+/* 這會確保玩家數量和題目數量輸入框在足夠寬的螢幕上保持固定寬度 */
+#game-settings .setting-item input[type="number"],
+#game-settings .setting-item select {
+    width: 150px; /* 設定一個適中的固定寬度，您可以調整這個值 */
     max-width: 40%; /* 確保它在非常寬的螢幕上也不會佔據一半以上 */
     flex-shrink: 0; /* 防止其在空間不足時被過度壓縮 */
     flex-grow: 0;   /* 防止其佔用所有可用空間 */
 }
 
-/* 針對特定設定項目，讓 label 和 input 保持在一行 */
-.setting-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* 確保左右兩側有空間 */
-    flex-wrap: nowrap; /* 防止在大螢幕下換行 */
-}
-
-/* 修正按鈕群組在一些情況下可能沒有置中的問題 */
+/* 確保按鈕群組在所有螢幕尺寸下都能水平置中 */
 .button-group {
     display: flex;
     justify-content: center; /* 確保按鈕群組水平置中 */
     gap: 10px;
     margin-top: 15px;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* 允許按鈕在空間不足時換行 */
 }
