@@ -200,7 +200,7 @@ button:disabled {
     max-width: 550px; /* 您的原有最大寬度 */
     text-align: center;
     position: relative;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     transform: translateY(-20px); /* 初始位置稍微向上 */
     transition: transform 0.3s ease;
 }
@@ -233,8 +233,9 @@ button:disabled {
 
 #show-answer-button {
     background-color: #2196F3; /* 藍色 - 您的原有顏色 */
-    margin-top: 15px;
-    margin-bottom: 10px;
+    /* 為確保置中，設置為區塊元素並使用 margin: auto */
+    display: block;
+    margin: 15px auto 10px auto;
 }
 
 #show-answer-button:hover {
@@ -377,7 +378,7 @@ footer {
     margin-top: auto; /* 將 footer 推到底部 */
 }
 
-/* ==== 選擇題選項的樣式 (新加入) ==== */
+/* ==== 選擇題選項的樣式 ==== */
 #multiple-choice-options {
     display: flex;
     flex-wrap: wrap; /* 允許選項換行 */
@@ -447,12 +448,25 @@ footer {
         max-width: 95%; /* 小螢幕上佔用更多寬度 */
     }
 
-    input[type="number"],
-    select,
-    input[type="text"],
-    textarea {
-        padding: 8px;
-        font-size: 0.9rem;
+    /* 修正設定項目中輸入框的寬度問題 */
+    .setting-item label {
+        width: 100%; /* 讓標籤佔滿一行 */
+        text-align: left; /* 讓文字靠左對齊 */
+        margin-bottom: 5px; /* 增加與輸入框的間距 */
+    }
+
+    .setting-item input[type="number"],
+    .setting-item select,
+    .setting-item input[type="text"],
+    .setting-item textarea {
+        width: 100%; /* 小螢幕下佔用100%寬度 */
+        margin-top: 5px;
+        /* margin-right: 0; */ /* 確保沒有額外的右邊距 */
+    }
+
+    .setting-item {
+        flex-direction: column; /* 小螢幕下變成垂直排列 */
+        align-items: flex-start; /* 靠左對齊 */
     }
 
     button, .button {
