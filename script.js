@@ -183,7 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderQuizList() {
         quizQuestionList.innerHTML = ''; // 清空現有列表
-        if (currentQuiz && currentQuiz.questions.length > 0) {
+        // 確保 currentQuiz 存在且有 questions 屬性
+        if (currentQuiz && currentQuiz.questions && currentQuiz.questions.length > 0) {
             currentQuiz.questions.forEach((q, index) => {
                 const item = document.createElement('li');
                 let displayContent = '';
@@ -196,6 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         break;
                     case 'event_card':
                         displayContent = `[事件卡 ${q.event_points >= 0 ? '+' : ''}${q.event_points}點] 事件: ${q.event_description}`;
+                        break;
+                    default:
+                        displayContent = `[未知類型] Q: ${q.question || q.event_description || '無描述'}`;
                         break;
                 }
                 item.innerHTML = `
@@ -230,22 +234,25 @@ document.addEventListener('DOMContentLoaded', () => {
         eventPointsInput.value = '0';
         pointsInput.value = '10';
 
-        // 隱藏所有題目類型輸入
+        // 隱藏所有題目類型輸入 (先全部隱藏，再顯示需要的)
         normalQuestionInputs.style.display = 'none';
         multipleChoiceInputs.style.display = 'none';
         eventCardInputs.style.display = 'none';
-        multipleChoiceOptionsContainer.style.display = 'none'; // 隱藏問題模態框的選項容器
+        pointsInput.parentElement.style.display = 'flex'; // 預設顯示分數輸入，事件卡再隱藏
 
         // 根據類型填充表單或預設為標準題
         if (questionToEdit) {
             questionTypeSelect.value = questionToEdit.type;
-            if (questionToEdit.points) pointsInput.value = questionToEdit.points;
-            else pointsInput.value = '10'; // 編輯事件卡時分數可能為undefined
+            if (questionToEdit.points) {
+                pointsInput.value = questionToEdit.points;
+            } else if (questionToEdit.type !== 'event_card') { // 非事件卡但無分數則設為預設10
+                pointsInput.value = '10';
+            }
         } else {
             questionTypeSelect.value = type;
         }
 
-        // 顯示對應的輸入框並填充數據（如果是編輯模式）
+        // 根據選定的題目類型顯示對應的輸入框並填充數據（如果是編輯模式）
         switch (questionTypeSelect.value) {
             case 'normal_question':
                 normalQuestionInputs.style.display = 'block';
@@ -302,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         normalQuestionInputs.style.display = 'none';
         multipleChoiceInputs.style.display = 'none';
         eventCardInputs.style.display = 'none';
-        multipleChoiceOptionsContainer.style.display = 'none';
+        // multipleChoiceOptionsContainer.style.display = 'none'; // 這個是問題模態框裡的，不是編輯區的
     }
 
     function saveOrUpdateQuestion() {
@@ -312,7 +319,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        let newQuestion = editingQuestionIndex !== -1 ? currentQuiz.questions[editingQuestionIndex] : {};
+        let newQuestion;
+        if (editingQuestionIndex !== -1) {
+            newQuestion = currentQuiz.questions[editingQuestionIndex]; // 編輯現有題目
+        } else {
+            newQuestion = {}; // 新增題目
+        }
+
         const type = questionTypeSelect.value;
         newQuestion.type = type;
 
@@ -381,8 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 新增題目
             currentQuiz.questions.push(newQuestion);
         } else {
-            // 更新題目（已經在 newQuestion 變數中更新了）
-            currentQuiz.questions[editingQuestionIndex] = newQuestion;
+            // 更新題目（newQuestion 已經是對原物件的引用，所以直接修改即可）
+            // currentQuiz.questions[editingQuestionIndex] = newQuestion; // 這一行在編輯模式下其實是多餘的，因為newQuestion已經是對數組元素的引用。
         }
 
         saveQuizzes();
@@ -423,6 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const shuffledQuestions = shuffleArray([...currentQuiz.questions]);
         currentQuestions = shuffledQuestions.slice(0, Math.min(numQuestions, shuffledQuestions.length));
 
+        if (currentQuestions.length === 0) {
+            alert('題庫中沒有足夠的題目開始遊戲。請添加更多題目。');
+            resetGame();
+            return;
+        }
+
         if (currentQuestions.length < numQuestions) {
             alert(`題庫中只有 ${currentQuestions.length} 題，將以此數量進行遊戲。`);
         }
@@ -445,8 +464,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         gameBoard.innerHTML = ''; // 清空遊戲板
 
-        populateQuizSelect();
-        renderQuizList();
+        populateQuizSelect(); // 重新填充下拉選單
+        renderQuizList();     // 重新渲染題庫列表
     }
 
     function updatePlayerInfo() {
@@ -491,7 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
         feedbackElement.textContent = '';
         showAnswerButton.style.display = 'block';
         multipleChoiceOptionsContainer.innerHTML = '';
-        multipleChoiceOptionsContainer.style.display = 'none';
+        multipleChoiceOptionsContainer.style.display = 'none'; // 確保一開始是隱藏的
 
         questionModal.style.display = 'block';
         questionModal.classList.add('show-modal'); // 為了動畫效果
@@ -527,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderMultipleChoiceOptions(options, correctIndex, points, cardIndex) {
         multipleChoiceOptionsContainer.innerHTML = '';
-        multipleChoiceOptionsContainer.style.display = 'flex';
+        multipleChoiceOptionsContainer.style.display = 'flex'; // 顯示容器
 
         options.forEach((option, index) => {
             const button = document.createElement('button');
@@ -700,7 +719,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.onload = (e) => {
                     try {
                         const importedData = JSON.parse(e.target.result);
-                        if (importedData && Array.isArray(importedData.questions) && typeof importedData.name === 'string') {
+                        // 檢查匯入數據是否包含必要的結構
+                        if (importedData && typeof importedData.name === 'string' && Array.isArray(importedData.questions)) {
                             const quizName = prompt('請輸入匯入題庫的名稱:', importedData.name);
                             if (quizName && quizName.trim() !== '') {
                                 const newQuizId = generateUniqueId();
@@ -713,13 +733,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 populateQuizSelect();
                                 selectedQuizId = newQuizId; // 自動選中新匯入的題庫
                                 quizSelect.value = newQuizId; // 更新下拉菜單顯示
+                                currentQuiz = allQuizzes[selectedQuizId]; // 確保 currentQuiz 指向新選中的題庫
                                 renderQuizList(); // 渲染新題庫的題目
                                 alert(`題庫 "${quizName.trim()}" 已成功匯入！`);
                             } else {
                                 alert('題庫名稱無效，匯入已取消。');
                             }
                         } else {
-                            alert('匯入的 JSON 檔案格式不正確。請確保它包含有效的 name 和 questions 陣列。');
+                            alert('匯入的 JSON 檔案格式不正確。請確保它包含有效的 "name" 屬性和 "questions" 陣列。');
                         }
                     } catch (error) {
                         alert('讀取檔案時發生錯誤或檔案不是有效的 JSON 格式。');
@@ -751,19 +772,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 題目類型選擇變化時，調用 showAddQuestionSection 調整輸入框顯示
     questionTypeSelect.addEventListener('change', (event) => {
         // 在編輯模式下，切換類型時需要清空內容
-        if (editingQuestionIndex !== -1) {
-            questionInput.value = '';
-            answerInput.value = '';
-            mcQuestionInput.value = '';
-            option1Input.value = '';
-            option2Input.value = '';
-            option3Input.value = '';
-            option4Input.value = '';
-            correctOptionSelect.value = '0';
-            eventDescriptionInput.value = '';
-            eventPointsInput.value = '0';
-            pointsInput.value = '10';
-        }
+        // 這裡不需要檢查 editingQuestionIndex，因為切換類型本就是一個「重置表單準備輸入」的行為
+        // 讓 showAddQuestionSection 自己處理清空邏輯
         showAddQuestionSection(event.target.value);
     });
 
@@ -785,5 +795,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 初始化調用 (確保在所有 DOM 元素和函數定義完成後執行) ---
     loadQuizzes();
     populateQuizSelect();
-    renderQuizList();
+    renderQuizList(); // 確保題庫列表在頁面載入時顯示
 });
