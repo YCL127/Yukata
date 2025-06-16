@@ -1,6 +1,76 @@
 // script.js
 
-// 預設的遊戲題目數據（僅用於首次載入或沒有任何本地題庫時）
+// --- DOM 元素獲取 ---
+const startGameButton = document.getElementById('start-game-button');
+const numPlayersInput = document.getElementById('num-players');
+const numQuestionsInput = document.getElementById('num-questions');
+const gameSettings = document.getElementById('game-settings');
+const gameContainer = document.getElementById('game-container');
+const currentPlayerDisplay = document.getElementById('current-player-display');
+const playerScoresContainer = document.getElementById('player-scores');
+const gameBoard = document.getElementById('game-board');
+const questionModal = document.getElementById('question-modal');
+const closeButton = document.querySelector('.close-button');
+const questionTextElement = document.getElementById('question-text');
+const showAnswerButton = document.getElementById('show-answer-button');
+const correctAnswerDisplay = document.getElementById('correct-answer-display');
+const judgmentButtons = document.querySelector('.judgment-buttons');
+const markCorrectButton = document.getElementById('mark-correct-button');
+const markIncorrectButton = document.getElementById('mark-incorrect-button');
+const feedbackElement = document.getElementById('feedback');
+const finalScoreModal = document.getElementById('final-score-modal');
+const closeFinalScoreModalButton = document.getElementById('close-final-score-modal');
+const finalScoresDisplay = document.getElementById('final-scores-display');
+const restartGameButton = document.getElementById('restart-game-button');
+
+// --- 題庫管理 DOM 元素 ---
+const quizManagementSection = document.getElementById('quiz-management-section');
+const quizSelect = document.getElementById('quiz-select');
+const addQuizButton = document.getElementById('add-quiz-button');
+const deleteQuizButton = document.getElementById('delete-quiz-button');
+const importQuizButton = document.getElementById('import-quiz-button');
+const exportQuizButton = document.getElementById('export-quiz-button');
+const addQuestionToQuizSection = document.getElementById('add-question-to-quiz-section');
+const showAddQuestionSectionButton = document.getElementById('show-add-question-section-button');
+const questionTypeSelect = document.getElementById('question-type-select');
+
+// 新增題目相關的輸入框們
+const normalQuestionInputs = document.getElementById('normal-question-inputs');
+const questionInput = document.getElementById('question-input');
+const answerInput = document.getElementById('answer-input');
+
+const multipleChoiceInputs = document.getElementById('multiple-choice-inputs');
+const mcQuestionInput = document.getElementById('mc-question-input');
+const option1Input = document.getElementById('option1-input');
+const option2Input = document.getElementById('option2-input');
+const option3Input = document.getElementById('option3-input');
+const option4Input = document.getElementById('option4-input');
+const correctOptionSelect = document.getElementById('correct-option-select');
+const multipleChoiceOptionsContainer = document.getElementById('multiple-choice-options'); // 用於顯示選擇題選項
+
+const eventCardInputs = document.getElementById('event-card-inputs');
+const eventDescriptionInput = document.getElementById('event-description-input');
+const eventPointsInput = document.getElementById('event-points-input');
+
+const pointsInput = document.getElementById('points-input');
+const saveQuestionButton = document.getElementById('save-question-button');
+const cancelAddQuestionButton = document.getElementById('cancel-add-question-button');
+
+// 按鈕群組 (用於新增題目區塊的儲存/取消) - 這裡現在應該能找到元素了
+const buttonGroup = addQuestionToQuizSection ? addQuestionToQuizSection.querySelector('.button-group') : null;
+
+// --- 遊戲狀態變數 ---
+let players = [];
+let currentPlayerIndex = 0;
+let currentQuestions = []; // 遊戲中使用的題目列表
+let answeredQuestions = new Set(); // 追蹤已回答的題目卡片索引
+
+// --- 題庫管理變數 ---
+let allQuizzes = {}; // 儲存所有題庫 { quizId: { name: '...', questions: [...] } }
+let selectedQuizId = 'default'; // 當前選擇的題庫ID
+let currentQuiz = { name: '預設題庫', questions: [] }; // 當前編輯或使用的題庫
+
+// --- 預設的遊戲題目數據（僅用於首次載入或沒有任何本地題庫時） ---
 const defaultQuestions = [
     {
         question: "哪種動物以其長脖子而聞名？",
@@ -41,1055 +111,858 @@ const defaultQuestions = [
         type: 'multiple_choice'
     },
     {
-        question: "2 + 2 等於多少？",
-        options: ["3", "4", "5", "6"],
-        correct_answer_index: 1, // 4 是選項 2
-        points: 10,
-        type: 'multiple_choice'
-    },
-    {
-        question: "以下哪一個是水果？",
-        options: ["胡蘿蔔", "馬鈴薯", "蘋果", "洋蔥"],
-        correct_answer_index: 2, // 蘋果是選項 3
+        question: "哪種交通工具通常在空中飛行？",
+        options: ["火車", "汽車", "飛機", "船"],
+        correct_answer_index: 2,
         points: 20,
         type: 'multiple_choice'
     },
+    // 新增事件卡範例
     {
-        question: "事件卡", // 統一事件卡在遊戲板上顯示的標題
-        event_description: "全體玩家各加 5 分",
-        event_type: "add_score_all_players",
-        points: 5,
+        description: "獲得一次額外答題機會！",
+        points_change: 0, // 事件卡可能沒有點數變化，或點數變化為0
         type: 'event_card'
     },
     {
-        question: "事件卡",
-        event_description: "當前玩家失去 10 分",
-        event_type: "deduct_score",
-        points: -10,
+        description: "本回合分數加倍！",
+        points_change: 0,
         type: 'event_card'
     },
     {
-        question: "事件卡",
-        event_description: "獲得隨機獎勵",
-        event_type: "random_bonus",
-        points: 0,
+        description: "扣除 5 點分數。",
+        points_change: -5,
         type: 'event_card'
     }
 ];
 
-// UI 元素獲取 (這些在 DOMContentLoaded 外部聲明為 let，以便在內部賦值並在其他函數中使用)
-let gameSettings;
-let startGameButton;
-let numPlayersInput;
-let numQuestionsInput;
-let gameContainer;
-let gameBoard;
-let questionModal;
-let questionText;
-let showAnswerButton;
-let correctAnswerDisplay;
-let judgmentButtonsDiv;
-let markCorrectButton;
-let markIncorrectButton;
-let feedbackDiv;
-let closeButton;
-let playerScoresDiv;
-let currentPlayerDisplay;
+// --- 輔助函數 ---
 
-// 題庫管理相關元素
-let quizSelect;
-let addQuizButton;
-let deleteQuizButton;
-let addQuestionToQuizSection;
-let currentQuizNameSpan;
-let questionTypeSelect;
-let normalQuestionFields;
-let eventCardFields;
-// 普通問題的輸入框 (答案輸入框已移除)
-let newQuestionTextNormal;
-let newPoints; // 普通問題的分數輸入框
-
-// 選擇題相關輸入框
-let multipleChoiceFields;
-let newQuestionTextMC;
-let mcOption1;
-let mcOption2;
-let mcOption3;
-let mcOption4;
-let mcCorrectAnswerIndex;
-let newPointsMC; // 選擇題的分數輸入框
-
-// 事件卡相關輸入框
-let eventQuestionText;
-let eventTypeSelect;
-let addQuestionToQuizButton;
-
-// 模態框內的選擇題選項按鈕容器
-let multipleChoiceOptionsDiv;
-let mcOptionButtons; // NodeList of option buttons
-
-// 新增的匯入匯出按鈕
-let importQuizButton;
-let exportQuizButton;
-
-// 最終得分彈窗元素
-let finalScoreModal;
-let closeFinalScoreModalButton;
-let finalScoresDisplay;
-let restartGameButton;
-
-
-// 遊戲狀態變量
-let players = [];
-let questions = [];
-let currentPlayerIndex = 0;
-let answeredQuestionsCount = 0;
-let activeQuestionData = null; // 當前打開的題目數據
-let currentQuestionCard = null; // 當前點擊的題目卡片
-let quizSets = {};
-let currentQuizName = 'default';
-
-// 事件卡類型配置
-const eventTypes = [
-    { value: 'add_score_current_player', text: '當前玩家加分' },
-    { value: 'deduct_score', text: '當前玩家扣分' },
-    { value: 'add_score_all_players', text: '全體玩家加分' },
-    { value: 'assign_player', text: '指定下一位回答的玩家' },
-    { value: 'score_transfer', text: '分數轉移給下一位玩家' },
-    { value: 'random_bonus', text: '獲得隨機獎勵' },
-    { value: 'random_penalty', text: '受到隨機懲罰' }
-];
-
-// 填充事件類型選擇器
-function populateEventTypeSelect() {
-    if (eventTypeSelect) {
-        eventTypeSelect.innerHTML = '';
-        eventTypes.forEach(type => {
-            const option = document.createElement('option');
-            option.value = type.value;
-            option.textContent = type.text;
-            eventTypeSelect.appendChild(option);
-        });
-    } else {
-        console.error("populateEventTypeSelect: eventTypeSelect 元素未找到，無法填充事件類型。");
-    }
+// 生成唯一 ID
+function generateUniqueId() {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
-// 載入題庫
-function loadQuizSets() {
-    const savedQuizSets = localStorage.getItem('quizSets');
-    if (savedQuizSets) {
-        quizSets = JSON.parse(savedQuizSets);
+// 保存題庫到 LocalStorage
+function saveQuizzes() {
+    localStorage.setItem('allQuizzes', JSON.stringify(allQuizzes));
+}
+
+// 從 LocalStorage 載入題庫
+function loadQuizzes() {
+    const storedQuizzes = localStorage.getItem('allQuizzes');
+    if (storedQuizzes) {
+        allQuizzes = JSON.parse(storedQuizzes);
     } else {
-        quizSets = {
-            'default': defaultQuestions
+        // 如果沒有任何題庫，則創建一個預設題庫
+        const defaultQuizId = 'default';
+        allQuizzes[defaultQuizId] = {
+            id: defaultQuizId,
+            name: '預設題庫',
+            questions: defaultQuestions
         };
+        saveQuizzes();
     }
+    // 確保 currentQuiz 總是指向一個有效的題庫
+    if (!allQuizzes[selectedQuizId]) {
+        selectedQuizId = Object.keys(allQuizzes)[0] || 'default'; // 選擇第一個或預設
+    }
+    currentQuiz = allQuizzes[selectedQuizId];
+    populateQuizSelect();
+}
 
-    if (quizSelect) {
-        quizSelect.innerHTML = '';
-        for (const name in quizSets) {
-            const option = document.createElement('option');
-            option.value = name;
-            option.textContent = name;
-            quizSelect.appendChild(option);
-        }
+// 填充題庫選擇下拉菜單
+function populateQuizSelect() {
+    quizSelect.innerHTML = ''; // 清空現有選項
+    for (const quizId in allQuizzes) {
+        const option = document.createElement('option');
+        option.value = quizId;
+        option.textContent = allQuizzes[quizId].name;
+        quizSelect.appendChild(option);
+    }
+    quizSelect.value = selectedQuizId; // 設置當前選中的題庫
+}
+
+// 載入指定題庫
+function loadQuiz(quizId) {
+    if (allQuizzes[quizId]) {
+        currentQuiz = allQuizzes[quizId];
+        selectedQuizId = quizId;
+        saveQuizzes(); // 保存選中的題庫ID
+        console.log(`題庫 "${currentQuiz.name}" 已載入。題目數量: ${currentQuiz.questions.length}`);
     } else {
-        console.error("loadQuizSets: quizSelect 元素未找到，無法載入題庫選項。");
-    }
-
-    const savedCurrentQuizName = localStorage.getItem('currentQuizName');
-    if (savedCurrentQuizName && quizSets[savedCurrentQuizName]) {
-        currentQuizName = savedCurrentQuizName;
-        if (quizSelect) quizSelect.value = currentQuizName;
-    } else {
-        currentQuizName = Object.keys(quizSets)[0] || 'default';
-        if (quizSelect) quizSelect.value = currentQuizName;
-    }
-
-    questions = quizSets[currentQuizName];
-    if (currentQuizNameSpan) {
-        currentQuizNameSpan.textContent = currentQuizName;
+        console.warn(`找不到題庫 ID: ${quizId}`);
     }
 }
 
-// 保存題庫
-function saveQuizSets() {
-    localStorage.setItem('quizSets', JSON.stringify(quizSets));
-    localStorage.setItem('currentQuizName', currentQuizName);
-}
+// --- 遊戲邏輯 ---
 
 // 初始化遊戲
-function initializeGame(numPlayers, numQuestions) {
-    players = [];
-    for (let i = 0; i < numPlayers; i++) {
-        players.push({ name: `玩家 ${i + 1}`, score: 0 });
+function initializeGame() {
+    const numPlayers = parseInt(numPlayersInput.value);
+    const numQuestions = parseInt(numQuestionsInput.value);
+
+    if (isNaN(numPlayers) || numPlayers < 2) {
+        alert('玩家數量至少為 2！');
+        return;
     }
+    if (isNaN(numQuestions) || numQuestions < 5 || numQuestions > 20) {
+        alert('題目數量必須在 5 到 20 之間！');
+        return;
+    }
+    if (currentQuiz.questions.length === 0) {
+        alert('當前題庫中沒有題目，請新增題目或選擇其他題庫！');
+        return;
+    }
+    if (currentQuiz.questions.length < numQuestions) {
+        alert(`當前題庫只有 ${currentQuiz.questions.length} 題，無法達到您設定的 ${numQuestions} 題。請減少題目數量或增加題庫題目。`);
+        return;
+    }
+
+    players = Array.from({ length: numPlayers }, (_, i) => ({
+        id: i,
+        name: `玩家 ${i + 1}`,
+        score: 0
+    }));
     currentPlayerIndex = 0;
-    answeredQuestionsCount = 0;
-    updatePlayerScores();
-    updateCurrentPlayerDisplay();
-    createGameBoard(numQuestions);
-}
+    answeredQuestions.clear();
 
-// 更新得分板
-function updatePlayerScores() {
-    if (playerScoresDiv) {
-        playerScoresDiv.innerHTML = '';
-        players.forEach(player => {
-            const playerDiv = document.createElement('div');
-            playerDiv.classList.add('player-score');
-            playerDiv.textContent = `${player.name}: ${player.score} 分`;
-            playerScoresDiv.appendChild(playerDiv);
-        });
-    }
-}
+    // 從當前題庫中隨機選取指定數量的題目
+    currentQuestions = shuffleArray([...currentQuiz.questions]).slice(0, numQuestions);
 
-// 更新當前玩家顯示
-function updateCurrentPlayerDisplay() {
-    if (currentPlayerDisplay) {
-        currentPlayerDisplay.textContent = `當前玩家: ${players[currentPlayerIndex].name}`;
-    }
-}
-
-// 創建遊戲板
-function createGameBoard(numQuestions) {
-    if (gameBoard) {
-        gameBoard.innerHTML = '';
-        const selectedQuestions = getRandomQuestions(numQuestions);
-
-        selectedQuestions.forEach((question, index) => {
-            const card = document.createElement('div');
-            card.classList.add('question-card');
-            card.dataset.index = index;
-            card.textContent = index + 1;
-            card.addEventListener('click', () => openQuestionModal(card, question, index));
-            gameBoard.appendChild(card);
-        });
-    }
-}
-
-// 隨機選擇題目
-function getRandomQuestions(num) {
-    const shuffled = [...questions].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, num);
-}
-
-// 打開問題彈窗
-function openQuestionModal(card, question, index) {
-    if (card.classList.contains('answered')) {
-        if (feedbackDiv) {
-            feedbackDiv.textContent = '這張卡片已經被翻過了！';
-        }
-        return;
-    }
-
-    activeQuestionData = question;
-    currentQuestionCard = card;
-
-    // 重置彈窗狀態和隱藏所有不相關的元素
-    if (showAnswerButton) showAnswerButton.style.display = 'none'; // 預設隱藏顯示答案按鈕
-    if (correctAnswerDisplay) correctAnswerDisplay.style.display = 'none';
-    if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none';
-    if (multipleChoiceOptionsDiv) multipleChoiceOptionsDiv.style.display = 'none'; // 預設隱藏選擇題選項
-    if (feedbackDiv) {
-        feedbackDiv.textContent = '';
-    }
-
-    // 獲取或創建事件確認按鈕 (通用)
-    let confirmEventButton = document.getElementById('confirm-event-button');
-    if (!confirmEventButton) {
-        confirmEventButton = document.createElement('button');
-        confirmEventButton.id = 'confirm-event-button';
-        confirmEventButton.textContent = '確定';
-        confirmEventButton.classList.add('judgment-button');
-        if (questionModal && questionModal.querySelector('.modal-content') && feedbackDiv) {
-            questionModal.querySelector('.modal-content').insertBefore(confirmEventButton, feedbackDiv);
-        } else {
-            console.warn("openQuestionModal: 無法插入 confirmEventButton，modal-content 或 feedbackDiv 不存在。");
-        }
-    }
-    confirmEventButton.style.display = 'none'; // 預設隱藏
-
-    // 根據題目類型設置模態框內容
-    if (question.type === 'event_card') {
-        if (questionText) {
-            questionText.textContent = `事件卡: ${question.event_description}`;
-        }
-        confirmEventButton.style.display = 'block';
-        confirmEventButton.onclick = () => {
-            handleEventCard(question);
-            markCardAsAnswered(card);
-            closeQuestionModal();
-            moveToNextPlayer();
-        };
-    } else if (question.type === 'multiple_choice') {
-        if (questionText) {
-            questionText.textContent = question.question;
-        }
-        if (multipleChoiceOptionsDiv) {
-            multipleChoiceOptionsDiv.style.display = 'flex'; // 顯示選項按鈕容器
-            mcOptionButtons.forEach((button, i) => {
-                button.textContent = question.options[i];
-                button.style.display = 'block'; // 確保按鈕顯示
-                button.classList.remove('selected', 'correct-option', 'answered-option'); // 清除所有狀態
-                button.onclick = () => handleMultipleChoiceSelection(button, i); // 綁定點擊事件，直接判斷
-            });
-        }
-        // 選擇題不顯示「顯示答案」按鈕和「正確」「錯誤」按鈕
-        if (showAnswerButton) showAnswerButton.style.display = 'none';
-        if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none';
-        confirmEventButton.style.display = 'none';
-        if (confirmEventButton) confirmEventButton.onclick = null;
-    } else { // normal_question (普通問題)
-        if (questionText) {
-            questionText.textContent = question.question;
-        }
-        if (showAnswerButton) showAnswerButton.style.display = 'block'; // 普通問題顯示顯示答案按鈕
-        if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none'; // 普通問題的判斷按鈕在顯示答案後才顯示
-        confirmEventButton.style.display = 'none';
-        if (confirmEventButton) confirmEventButton.onclick = null;
-    }
-
-    // 最後才顯示模態框，確保內容已經設置好
-    if (questionModal) {
-        questionModal.style.display = 'flex';
-        setTimeout(() => {
-            questionModal.classList.add('show-modal');
-        }, 10);
-    }
-}
-
-// 處理選擇題選項的點擊 (直接判斷並給予回饋)
-function handleMultipleChoiceSelection(button, selectedIndex) {
-    if (!activeQuestionData || activeQuestionData.type !== 'multiple_choice') return;
-
-    // 禁用所有選項按鈕，防止重複點擊
-    mcOptionButtons.forEach(btn => {
-        btn.onclick = null;
-        btn.classList.add('answered-option'); // 添加樣式表明已作答
-    });
-
-    const isCorrect = (selectedIndex === activeQuestionData.correct_answer_index);
-    let scoreChange = 0;
-    let feedbackMessage = '';
-
-    const correctAnswerText = activeQuestionData.options[activeQuestionData.correct_answer_index];
-
-    if (isCorrect) {
-        scoreChange = activeQuestionData.points;
-        feedbackMessage = `選擇正確！獲得 ${scoreChange} 分！`;
-        if (feedbackDiv) { feedbackDiv.style.color = 'green'; }
-        button.classList.add('correct-option'); // 高亮選中的正確選項
-    } else {
-        scoreChange = 0; // 選擇題答錯不扣分
-        feedbackMessage = `選擇錯誤！正確答案是：${correctAnswerText}`;
-        if (feedbackDiv) { feedbackDiv.style.color = 'red'; }
-        button.classList.add('incorrect-option'); // 高亮選中的錯誤選項 (可以為這個添加 CSS)
-        // 同時高亮正確答案
-        if (mcOptionButtons[activeQuestionData.correct_answer_index]) {
-             mcOptionButtons[activeQuestionData.correct_answer_index].classList.add('correct-option');
-        }
-    }
-
-    players[currentPlayerIndex].score += scoreChange;
-    if (feedbackDiv) {
-        feedbackDiv.textContent = feedbackMessage;
-    }
-    updatePlayerScores();
-    markCardAsAnswered(currentQuestionCard);
-    closeQuestionModalWithDelay(); // 自動延遲關閉並切換玩家
-}
-
-
-// 顯示答案 (僅適用於普通問題)
-function showAnswer(question) {
-    if (question.type === 'normal_question') {
-        if (showAnswerButton) showAnswerButton.style.display = 'none';
-        if (correctAnswerDisplay) correctAnswerDisplay.textContent = `答案：${question.answer}`;
-        if (correctAnswerDisplay) correctAnswerDisplay.style.display = 'block';
-        if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'flex'; // 普通問題顯示判斷按鈕
-        if (feedbackDiv) {
-            feedbackDiv.textContent = '';
-        }
-    }
-    // 選擇題不再通過此函數顯示答案，直接在 handleMultipleChoiceSelection 處理
-}
-
-// 處理普通問題的正確/錯誤判斷
-function handlePlayerJudgment(isCorrect) {
-    let scoreChange = 0;
-    let feedbackMessage = '';
-
-    if (isCorrect) {
-        scoreChange = activeQuestionData.points;
-        feedbackMessage = `答對了！獲得 ${scoreChange} 分！`;
-        if (feedbackDiv) { feedbackDiv.style.color = 'green'; }
-    } else {
-        scoreChange = 0; // 普通問題答錯不扣分
-        feedbackMessage = `答錯了！`;
-        if (feedbackDiv) { feedbackDiv.style.color = 'red'; }
-    }
-
-    players[currentPlayerIndex].score += scoreChange;
-    if (feedbackDiv) {
-        feedbackDiv.textContent = feedbackMessage;
-    }
-    updatePlayerScores();
-    markCardAsAnswered(currentQuestionCard);
-    closeQuestionModalWithDelay();
-}
-
-// 處理事件卡的核心邏輯
-function handleEventCard(eventCard) {
-    console.log("--- 進入 handleEventCard 函數 ---", eventCard);
-    if (!feedbackDiv) {
-        console.error("handleEventCard: 檢測到 feedbackDiv 為 null！無法更新 UI。");
-        return;
-    }
-    let eventFeedback = '';
-    feedbackDiv.style.color = '#ff9800'; // 給事件結果一個醒目的顏色
-
-    switch (eventCard.event_type) {
-        case 'add_score_current_player':
-            if (typeof eventCard.points === 'number') {
-                players[currentPlayerIndex].score += eventCard.points;
-                eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 獲得 ${eventCard.points} 分！`;
-            } else {
-                eventFeedback = `事件卡分數設定錯誤：${eventCard.event_description}`;
-                console.error("事件卡分數設定錯誤:", eventCard);
-            }
-            break;
-        case 'deduct_score':
-            if (typeof eventCard.points === 'number') {
-                const deduction = Math.abs(eventCard.points);
-                players[currentPlayerIndex].score -= deduction;
-                eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 失去 ${deduction} 分！`;
-            } else {
-                eventFeedback = `事件卡分數設定錯誤：${eventCard.event_description}`;
-                console.error("事件卡分數設定錯誤:", eventCard);
-            }
-            break;
-        case 'add_score_all_players':
-            if (typeof eventCard.points === 'number') {
-                players.forEach(player => {
-                    player.score += eventCard.points;
-                });
-                eventFeedback = `事件！${eventCard.event_description}，全體玩家各獲得 ${eventCard.points} 分！`;
-            } else {
-                eventFeedback = `事件卡分數設定錯誤：${eventCard.event_description}`;
-                console.error("事件卡分數設定錯誤:", eventCard);
-            }
-            break;
-        case 'assign_player':
-            eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 獲得指定下一位回答玩家的權力！`;
-            break;
-        case 'score_transfer':
-            const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
-            const transferredScore = players[currentPlayerIndex].score;
-            players[nextPlayerIndex].score += transferredScore;
-            players[currentPlayerIndex].score = 0;
-            eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 的 ${transferredScore} 分轉移給 ${players[nextPlayerIndex].name}！`;
-            break;
-        case 'random_bonus':
-            const bonusPoints = Math.floor(Math.random() * 20) + 5;
-            players[currentPlayerIndex].score += bonusPoints;
-            eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 獲得隨機獎勵 ${bonusPoints} 分！`;
-            break;
-        case 'random_penalty':
-            const penaltyPoints = Math.floor(Math.random() * 10) + 2;
-            players[currentPlayerIndex].score -= penaltyPoints;
-            eventFeedback = `事件！${eventCard.event_description}，${players[currentPlayerIndex].name} 失去隨機懲罰 ${penaltyPoints} 分！`;
-            break;
-        default:
-            eventFeedback = `事件卡類型未定義或未處理：${eventCard.event_type}`;
-            console.error('Unknown event type:', eventCard.event_type, eventCard);
-            break;
-    }
-    feedbackDiv.textContent = eventFeedback;
-    updatePlayerScores();
-}
-
-// 標記卡片為已回答
-function markCardAsAnswered(card) {
-    card.classList.add('answered');
-    answeredQuestionsCount++;
-    checkGameOver();
-}
-
-// 延遲關閉問題彈窗並切換玩家
-function closeQuestionModalWithDelay() {
-    setTimeout(() => {
-        closeQuestionModal();
-        moveToNextPlayer();
-    }, 1500);
-}
-
-// 立即關閉問題彈窗
-function closeQuestionModal() {
-    if (questionModal) {
-        questionModal.classList.remove('show-modal');
-        setTimeout(() => {
-            questionModal.style.display = 'none';
-            // 清理模態框內容
-            if (correctAnswerDisplay) correctAnswerDisplay.style.display = 'none';
-            if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none';
-            if (feedbackDiv) {
-                feedbackDiv.textContent = '';
-            }
-            if (multipleChoiceOptionsDiv) { // 重置選擇題選項按鈕狀態
-                multipleChoiceOptionsDiv.style.display = 'none';
-                mcOptionButtons.forEach(button => {
-                    button.classList.remove('selected', 'correct-option', 'answered-option', 'incorrect-option'); // 清除所有相關樣式
-                    button.textContent = '';
-                    button.onclick = null; // 移除事件監聽
-                });
-            }
-
-            let confirmEventButton = document.getElementById('confirm-event-button');
-            if (confirmEventButton) {
-                confirmEventButton.style.display = 'none';
-                confirmEventButton.onclick = null;
-                if (confirmEventButton.parentNode) {
-                    confirmEventButton.parentNode.removeChild(confirmEventButton);
-                }
-            }
-        }, 300);
-    }
-}
-
-// 切換到下一位玩家
-function moveToNextPlayer() {
-    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-    updateCurrentPlayerDisplay();
-}
-
-// 檢查遊戲是否結束
-function checkGameOver() {
-    if (answeredQuestionsCount >= parseInt(numQuestionsInput.value)) {
-        setTimeout(() => {
-            showFinalScores();
-        }, 1000);
-    }
-}
-
-// 顯示最終得分
-function showFinalScores() {
-    if (gameContainer) gameContainer.style.display = 'none';
-    if (finalScoresDisplay) finalScoresDisplay.innerHTML = '';
-    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-
-    let maxScore = 0;
-    if (sortedPlayers.length > 0) {
-        maxScore = sortedPlayers[0].score;
-    }
-
-    sortedPlayers.forEach((player, index) => {
-        const playerDiv = document.createElement('div');
-        playerDiv.classList.add('player-final-score');
-        playerDiv.textContent = `${index + 1}. ${player.name}: ${player.score} 分`;
-        if (player.score === maxScore && maxScore > 0) {
-            playerDiv.classList.add('winner');
-        }
-        if (finalScoresDisplay) finalScoresDisplay.appendChild(playerDiv);
-    });
-
-    if (finalScoreModal) {
-        finalScoreModal.style.display = 'flex';
-        setTimeout(() => {
-            finalScoreModal.classList.add('show-modal');
-        }, 10);
-    }
+    updatePlayerInfo();
+    renderGameBoard(numQuestions);
+    gameSettings.style.display = 'none';
+    quizManagementSection.style.display = 'none'; // 隱藏題庫管理
+    addQuestionToQuizSection.style.display = 'none'; // 隱藏新增題目區塊
+    gameContainer.style.display = 'block';
 }
 
 // 重置遊戲
 function resetGame() {
-    if (gameSettings) gameSettings.style.display = 'block';
-    if (gameContainer) gameContainer.style.display = 'none';
-
-    if (gameBoard) gameBoard.innerHTML = '';
-    if (playerScoresDiv) playerScoresDiv.innerHTML = '';
-    if (currentPlayerDisplay) currentPlayerDisplay.textContent = '';
-
-    if (numPlayersInput) numPlayersInput.value = 2;
-    if (numQuestionsInput) numQuestionsInput.value = 10;
-
     players = [];
     currentPlayerIndex = 0;
-    answeredQuestionsCount = 0;
-    activeQuestionData = null;
-    currentQuestionCard = null;
+    currentQuestions = [];
+    answeredQuestions.clear();
+    gameContainer.style.display = 'none';
+    gameSettings.style.display = 'block';
+    quizManagementSection.style.display = 'block'; // 顯示題庫管理
+    addQuestionToQuizSection.style.display = 'none'; // 隱藏新增題目區塊
+    hideQuestionModal(); // 確保問題模態框關閉
+}
 
-    loadQuizSets();
-    questions = quizSets[currentQuizName];
 
-    if (addQuestionToQuizSection) {
-        addQuestionToQuizSection.style.display = 'block';
-    }
-    toggleQuestionFields(); // 重置新增題目表單的顯示
+// 更新玩家資訊顯示
+function updatePlayerInfo() {
+    currentPlayerDisplay.textContent = `當前玩家: ${players[currentPlayerIndex].name}`;
+    playerScoresContainer.innerHTML = players.map(player => `
+        <div class="player-score" id="player-${player.id}-score">
+            ${player.name}: ${player.score}
+        </div>
+    `).join('');
+}
 
-    // 清理模態框相關元素狀態
-    if (questionModal) {
-        questionModal.style.display = 'none';
-        questionModal.classList.remove('show-modal');
+// 渲染遊戲板
+function renderGameBoard(numCards) {
+    gameBoard.innerHTML = '';
+    for (let i = 0; i < numCards; i++) {
+        const card = document.createElement('div');
+        card.classList.add('question-card');
+        card.dataset.index = i; // 將題目索引存儲在數據屬性中
+        card.textContent = i + 1; // 顯示卡片編號
+        card.addEventListener('click', handleCardClick);
+        gameBoard.appendChild(card);
     }
-    if (questionText) questionText.textContent = '';
-    if (showAnswerButton) showAnswerButton.style.display = 'block'; // 預設普通問題顯示
-    if (correctAnswerDisplay) correctAnswerDisplay.style.display = 'none';
-    if (judgmentButtonsDiv) judgmentButtonsDiv.style.display = 'none';
-    if (feedbackDiv) {
-        feedbackDiv.textContent = '';
-    }
-    if (multipleChoiceOptionsDiv) { // 重置選擇題選項按鈕
-        multipleChoiceOptionsDiv.style.display = 'none';
-        mcOptionButtons.forEach(button => {
-            button.classList.remove('selected', 'correct-option', 'answered-option', 'incorrect-option'); // 清除所有相關樣式
-            button.textContent = '';
-            button.onclick = null;
-        });
+}
+
+// 處理卡片點擊事件
+function handleCardClick(event) {
+    const card = event.target;
+    const index = parseInt(card.dataset.index);
+
+    if (answeredQuestions.has(index)) {
+        return; // 如果已經回答過，則不做任何事情
     }
 
-    let confirmEventButton = document.getElementById('confirm-event-button');
-    if (confirmEventButton) {
-        confirmEventButton.style.display = 'none';
-        confirmEventButton.onclick = null;
-        if (confirmEventButton.parentNode) {
-            confirmEventButton.parentNode.removeChild(confirmEventButton);
+    const question = currentQuestions[index];
+
+    displayQuestion(question, index);
+}
+
+// 顯示問題模態框
+function displayQuestion(question, cardIndex) {
+    questionModal.classList.add('show-modal'); // 添加 class 控制顯示動畫
+    questionModal.style.display = 'flex'; // 確保模態框是 flex 容器以便置中
+
+    // 重置模態框內容
+    showAnswerButton.style.display = 'block';
+    correctAnswerDisplay.style.display = 'none';
+    judgmentButtons.style.display = 'none';
+    feedbackElement.textContent = '';
+    multipleChoiceOptionsContainer.innerHTML = ''; // 清空選擇題選項
+
+    questionModal.dataset.cardIndex = cardIndex; // 存儲當前問題的卡片索引
+
+    if (question.type === 'normal_question' || question.type === 'multiple_choice') {
+        questionTextElement.textContent = question.question;
+        // 隱藏事件卡點數顯示（如果存在）
+        document.getElementById('event-card-points-display') && (document.getElementById('event-card-points-display').style.display = 'none');
+        if (question.type === 'normal_question') {
+            showAnswerButton.style.display = 'block'; // 普通問題顯示"顯示答案"按鈕
+            multipleChoiceOptionsContainer.style.display = 'none'; // 隱藏選擇題選項容器
+        } else { // multiple_choice
+            showAnswerButton.style.display = 'none'; // 選擇題不顯示"顯示答案"按鈕
+            multipleChoiceOptionsContainer.style.display = 'flex'; // 顯示選擇題選項容器
+            renderMultipleChoiceOptions(question.options, question.correct_answer_index);
+        }
+    } else if (question.type === 'event_card') {
+        questionTextElement.textContent = question.description;
+        showAnswerButton.style.display = 'none'; // 事件卡沒有答案按鈕
+        judgmentButtons.style.display = 'none'; // 事件卡沒有判斷按鈕
+        multipleChoiceOptionsContainer.style.display = 'none'; // 事件卡沒有選擇題選項
+
+        // 顯示事件卡點數影響
+        correctAnswerDisplay.textContent = `點數影響: ${question.points_change}`;
+        correctAnswerDisplay.style.display = 'block';
+        feedbackElement.textContent = ''; // 清空反饋
+
+        // 直接處理事件卡邏輯，然後關閉模態框
+        applyEventCardEffect(question);
+        markCardAsAnswered(cardIndex);
+        setTimeout(() => {
+            hideQuestionModal();
+            nextTurn();
+        }, 3000); // 3秒後自動關閉並換下一位玩家
+    }
+}
+
+// 渲染選擇題選項
+function renderMultipleChoiceOptions(options, correctIndex) {
+    multipleChoiceOptionsContainer.innerHTML = '';
+    options.forEach((optionText, index) => {
+        const button = document.createElement('button');
+        button.classList.add('mc-option-button');
+        button.textContent = optionText;
+        button.dataset.optionIndex = index;
+        button.addEventListener('click', (e) => handleOptionClick(e, correctIndex));
+        multipleChoiceOptionsContainer.appendChild(button);
+    });
+}
+
+// 處理選擇題選項點擊
+function handleOptionClick(event, correctIndex) {
+    const selectedButton = event.target;
+    const selectedIndex = parseInt(selectedButton.dataset.optionIndex);
+    const cardIndex = parseInt(questionModal.dataset.cardIndex);
+    const question = currentQuestions[cardIndex];
+
+    // 禁用所有選項按鈕
+    Array.from(multipleChoiceOptionsContainer.children).forEach(button => {
+        button.classList.add('answered-option');
+        button.removeEventListener('click', handleOptionClick);
+    });
+
+    if (selectedIndex === correctIndex) {
+        selectedButton.classList.add('correct-option');
+        feedbackElement.textContent = '恭喜！回答正確！';
+        feedbackElement.style.color = '#4CAF50';
+        players[currentPlayerIndex].score += question.points;
+        updatePlayerScores();
+    } else {
+        selectedButton.classList.add('incorrect-option');
+        feedbackElement.textContent = '很可惜，回答錯誤。';
+        feedbackElement.style.color = '#F44336';
+        // 顯示正確答案
+        const correctOptionButton = multipleChoiceOptionsContainer.querySelector(`[data-option-index="${correctIndex}"]`);
+        if (correctOptionButton) {
+            correctOptionButton.classList.add('correct-option');
         }
     }
+    markCardAsAnswered(cardIndex);
+    setTimeout(() => {
+        hideQuestionModal();
+        nextTurn();
+    }, 2000); // 2秒後自動關閉並換下一位玩家
 }
 
-// 題庫管理功能
-function handleAddQuizButton() {
-    const newQuizName = prompt('請輸入新題庫的名稱:');
-    if (newQuizName && newQuizName.trim() !== '' && !quizSets[newQuizName]) {
-        quizSets[newQuizName] = [];
-        saveQuizSets();
-        loadQuizSets();
-        if (quizSelect) quizSelect.value = newQuizName;
-        currentQuizName = newQuizName;
-        questions = quizSets[currentQuizName];
-        if (currentQuizNameSpan) currentQuizNameSpan.textContent = newQuizName;
-        alert(`題庫 "${newQuizName}" 已創建！`);
-    } else if (newQuizName && quizSets[newQuizName]) {
-        alert('此題庫名稱已存在，請使用其他名稱。');
+
+// 應用事件卡效果
+function applyEventCardEffect(eventCard) {
+    let message = eventCard.description;
+    if (eventCard.points_change !== 0) {
+        players[currentPlayerIndex].score += eventCard.points_change;
+        updatePlayerScores();
+        message += ` (點數變化: ${eventCard.points_change})`;
+    }
+    feedbackElement.textContent = message;
+    feedbackElement.style.color = '#FF9800'; // 事件卡使用橘色反饋
+}
+
+
+// 隱藏問題模態框
+function hideQuestionModal() {
+    questionModal.classList.remove('show-modal'); // 移除 class 控制顯示動畫
+    setTimeout(() => {
+        questionModal.style.display = 'none'; // 延遲隱藏，確保動畫完成
+    }, 300); // 應與 CSS 轉場時間匹配
+}
+
+// 更新玩家分數顯示
+function updatePlayerScores() {
+    players.forEach(player => {
+        const playerScoreElement = document.getElementById(`player-${player.id}-score`);
+        if (playerScoreElement) {
+            playerScoreElement.textContent = `${player.name}: ${player.score}`;
+        }
+    });
+}
+
+// 標記卡片為已回答
+function markCardAsAnswered(index) {
+    answeredQuestions.add(index);
+    const card = gameBoard.querySelector(`.question-card[data-index="${index}"]`);
+    if (card) {
+        card.classList.add('answered');
+        card.removeEventListener('click', handleCardClick); // 移除點擊事件
     }
 }
 
-// 根據選擇的題目類型顯示或隱藏相應的輸入字段
-function toggleQuestionFields() {
-    if (!questionTypeSelect || !normalQuestionFields || !multipleChoiceFields || !eventCardFields) {
-        console.error("toggleQuestionFields: 部分題目類型相關的 UI 元素未找到。");
+// 換下一位玩家
+function nextTurn() {
+    // 檢查遊戲是否結束
+    if (answeredQuestions.size === currentQuestions.length) {
+        endGame();
         return;
     }
 
-    const selectedType = questionTypeSelect.value;
-    normalQuestionFields.style.display = 'none';
-    multipleChoiceFields.style.display = 'none';
-    eventCardFields.style.display = 'none';
-
-    // 重置所有新增題目表單的輸入框
-    if (newQuestionTextNormal) newQuestionTextNormal.value = '';
-    if (newPoints) newPoints.value = 10;
-    if (newQuestionTextMC) newQuestionTextMC.value = '';
-    if (mcOption1) mcOption1.value = '';
-    if (mcOption2) mcOption2.value = '';
-    if (mcOption3) mcOption3.value = '';
-    if (mcOption4) mcOption4.value = '';
-    if (mcCorrectAnswerIndex) mcCorrectAnswerIndex.value = 1;
-    if (newPointsMC) newPointsMC.value = 10;
-    if (eventQuestionText) eventQuestionText.value = '';
-    // eventTypeSelect 的值可能不需要每次都重置
-
-    if (selectedType === 'normal_question') {
-        normalQuestionFields.style.display = 'block';
-    } else if (selectedType === 'multiple_choice') {
-        multipleChoiceFields.style.display = 'block';
-    } else if (selectedType === 'event_card') {
-        eventCardFields.style.display = 'block';
-    }
+    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    updatePlayerInfo();
 }
 
-// 處理新增題目按鈕點擊
-function addQuestionToQuizButtonClickHandler() {
-    if (!questionTypeSelect || !newPoints || !newPointsMC || !eventTypeSelect) {
-        console.error("addQuestionToQuizButtonClickHandler: 新增題目所需的 UI 元素未完全初始化。");
-        return;
+// 結束遊戲
+function endGame() {
+    let finalScoresHtml = '<h3>最終得分</h3>';
+    const sortedPlayers = [...players].sort((a, b) => b.score - a.score); // 依分數排序
+
+    // 找出最高分
+    const maxScore = sortedPlayers[0].score;
+
+    sortedPlayers.forEach(player => {
+        const isWinner = player.score === maxScore && maxScore > 0; // 如果有多個最高分，都是贏家
+        finalScoresHtml += `
+            <p class="player-final-score ${isWinner ? 'winner' : ''}">
+                ${player.name}: ${player.score} ${isWinner ? '🏆' : ''}
+            </p>
+        `;
+    });
+    finalScoreModal.innerHTML = `
+        <div class="modal-content">
+            <span class="close-button" id="close-final-score-modal">&times;</span>
+            <h2>遊戲結束！最終得分</h2>
+            <div id="final-scores-display">
+                ${finalScoresHtml}
+            </div>
+            <button id="restart-game-button">重新開始</button>
+        </div>
+    `;
+    // 重新獲取新的關閉和重啟按鈕，因為內容被替換了
+    document.getElementById('close-final-score-modal').addEventListener('click', () => {
+        finalScoreModal.classList.remove('show-modal');
+        setTimeout(() => {
+            finalScoreModal.style.display = 'none';
+            resetGame();
+        }, 300);
+    });
+    document.getElementById('restart-game-button').addEventListener('click', () => {
+        finalScoreModal.classList.remove('show-modal');
+        setTimeout(() => {
+            finalScoreModal.style.display = 'none';
+            resetGame();
+        }, 300);
+    });
+
+    finalScoreModal.classList.add('show-modal');
+    finalScoreModal.style.display = 'flex';
+}
+
+// --- 題庫管理函數 ---
+
+// 顯示新增題目區塊
+function showAddQuestionSection(type) {
+    // 重置所有輸入框和選項的顯示狀態
+    // 這裡增加了對元素是否存在的檢查，以避免 null 錯誤
+    if (normalQuestionInputs) normalQuestionInputs.style.display = 'none';
+    if (questionInput) questionInput.value = ''; // 清空標準題目內容
+    if (answerInput) answerInput.value = ''; // 清空標準答案
+
+    if (multipleChoiceInputs) multipleChoiceInputs.style.display = 'none';
+    if (mcQuestionInput) mcQuestionInput.value = ''; // 清空選擇題內容
+    if (option1Input) option1Input.value = '';
+    if (option2Input) option2Input.value = '';
+    if (option3Input) option3Input.value = '';
+    if (option4Input) option4Input.value = '';
+    if (correctOptionSelect) correctOptionSelect.value = '0'; // 重置正確選項
+
+    if (eventCardInputs) eventCardInputs.style.display = 'none';
+    if (eventDescriptionInput) eventDescriptionInput.value = ''; // 清空事件描述
+    if (eventPointsInput) eventPointsInput.value = 0; // 重置事件點數
+
+    if (pointsInput) pointsInput.value = 10; // 重置分數
+
+    // 根據類型顯示對應的輸入區塊
+    switch (type) {
+        case 'normal_question':
+            if (normalQuestionInputs) normalQuestionInputs.style.display = 'block';
+            if (pointsInput) pointsInput.closest('.setting-item').style.display = 'flex'; // 顯示分數輸入框
+            if (buttonGroup) buttonGroup.style.display = 'flex'; // 確保按鈕群組顯示為 flex
+            break;
+        case 'multiple_choice':
+            if (multipleChoiceInputs) multipleChoiceInputs.style.display = 'block';
+            if (pointsInput) pointsInput.closest('.setting-item').style.display = 'flex'; // 顯示分數輸入框
+            if (buttonGroup) buttonGroup.style.display = 'flex'; // 確保按鈕群組顯示為 flex
+            break;
+        case 'event_card':
+            if (eventCardInputs) eventCardInputs.style.display = 'block';
+            if (pointsInput) pointsInput.closest('.setting-item').style.display = 'none'; // 事件卡不需要分數輸入框
+            if (buttonGroup) buttonGroup.style.display = 'flex'; // 確保按鈕群組顯示為 flex
+            break;
     }
 
-    const selectedType = questionTypeSelect.value;
-    let newQuestion = { type: selectedType };
+    if (addQuestionToQuizSection) addQuestionToQuizSection.style.display = 'block'; // 顯示整個新增題目區塊
+    if (quizManagementSection) quizManagementSection.style.display = 'none'; // 隱藏題庫管理區塊
+    if (gameSettings) gameSettings.style.display = 'none'; // 隱藏遊戲設定，只顯示新增題目
+}
 
-    if (selectedType === 'normal_question') {
-        const qText = newQuestionTextNormal.value.trim();
-        const points = parseInt(newPoints.value);
 
-        if (!qText) {
-            alert('請輸入普通問題內容。');
+// 保存題目到當前題庫
+function saveQuestion() {
+    const type = questionTypeSelect.value;
+    let newQuestion = {};
+
+    if (type === 'normal_question') {
+        const questionText = questionInput.value.trim();
+        const answerText = answerInput.value.trim();
+        const points = parseInt(pointsInput.value);
+
+        if (!questionText || !answerText || isNaN(points) || points <= 0) {
+            alert('請填寫完整題目、答案和有效的分數！');
             return;
         }
-        if (isNaN(points) || points <= 0) {
-            alert('請輸入有效的普通問題分數（正數）。');
-            return;
-        }
-        newQuestion.question = qText;
-        newQuestion.answer = ""; // 普通問題的答案不會在新增時設定，而是在遊戲中判斷
-        newQuestion.points = points;
-    } else if (selectedType === 'multiple_choice') {
-        const qText = newQuestionTextMC.value.trim();
+        newQuestion = {
+            question: questionText,
+            answer: answerText,
+            points: points,
+            type: 'normal_question'
+        };
+    } else if (type === 'multiple_choice') {
+        const mcQuestionText = mcQuestionInput.value.trim();
         const options = [
-            mcOption1.value.trim(),
-            mcOption2.value.trim(),
-            mcOption3.value.trim(),
-            mcOption4.value.trim()
+            option1Input.value.trim(),
+            option2Input.value.trim(),
+            option3Input.value.trim(),
+            option4Input.value.trim()
         ];
-        const correctIndex = parseInt(mcCorrectAnswerIndex.value) - 1; // 轉為 0-based index
-        const points = parseInt(newPointsMC.value);
+        const correctOptionIndex = parseInt(correctOptionSelect.value);
+        const points = parseInt(pointsInput.value);
 
-        if (!qText) {
-            alert('請輸入選擇題問題內容。');
+        if (!mcQuestionText || options.some(opt => !opt) || isNaN(points) || points <= 0) {
+            alert('請填寫完整選擇題題目、所有選項和有效的分數！');
             return;
         }
-        if (options.some(opt => opt === '')) {
-            alert('請輸入所有選項內容。');
-            return;
-        }
-        if (isNaN(correctIndex) || correctIndex < 0 || correctIndex > 3) {
-            alert('請輸入有效的正確答案選項編號 (1-4)。');
-            return;
-        }
-        if (isNaN(points) || points <= 0) {
-            alert('請輸入有效的選擇題分數（正數）。');
-            return;
-        }
-        newQuestion.question = qText;
-        newQuestion.options = options;
-        newQuestion.correct_answer_index = correctIndex;
-        newQuestion.points = points;
-    } else { // event_card
-        const qText = eventQuestionText.value.trim();
-        const eventType = eventTypeSelect.value;
+        newQuestion = {
+            question: mcQuestionText,
+            options: options,
+            correct_answer_index: correctOptionIndex,
+            points: points,
+            type: 'multiple_choice'
+        };
+    } else if (type === 'event_card') {
+        const eventDescription = eventDescriptionInput.value.trim();
+        const eventPoints = parseInt(eventPointsInput.value);
 
-        if (!qText) {
-            alert('請輸入事件描述。');
+        if (!eventDescription) {
+            alert('請填寫事件描述！');
             return;
         }
-        if (!eventType) {
-            alert('請選擇事件類型。');
-            return;
-        }
-        newQuestion.question = "事件卡";
-        newQuestion.event_type = eventType;
-        newQuestion.event_description = qText;
-
-        let points = 0;
-        if (eventType === 'add_score_current_player' || eventType === 'add_score_all_players') {
-             const eventPointsInput = prompt(`請輸入此事件卡加分的分數 (請輸入正數):`, 5);
-             if (eventPointsInput === null || isNaN(parseInt(eventPointsInput)) || parseInt(eventPointsInput) <= 0) {
-                 alert('請輸入有效的正數分數。');
-                 return;
-             }
-             points = parseInt(eventPointsInput);
-        } else if (eventType === 'deduct_score') {
-             const eventPointsInput = prompt(`請輸入此事件卡扣分的分數 (請輸入正數，將自動轉為負數):`, 5);
-             if (eventPointsInput === null || isNaN(parseInt(eventPointsInput)) || parseInt(eventPointsInput) <= 0) {
-                 alert('請輸入有效的正數分數。');
-                 return;
-             }
-             points = -Math.abs(parseInt(eventPointsInput));
-        }
-        newQuestion.points = points;
+        newQuestion = {
+            description: eventDescription,
+            points_change: eventPoints, // 這裡使用 points_change 與其他題目區分
+            type: 'event_card'
+        };
+    } else {
+        alert('請選擇一個題目類型。');
+        return;
     }
 
-    if (!quizSets[currentQuizName]) {
-        quizSets[currentQuizName] = [];
-    }
-    quizSets[currentQuizName].push(newQuestion);
-    saveQuizSets();
-    alert('題目已新增到當前題庫！');
-    toggleQuestionFields(); // 清空表單並重置顯示
-    questions = quizSets[currentQuizName]; // 更新當前使用的題目列表
+    currentQuiz.questions.push(newQuestion);
+    saveQuizzes();
+    renderQuizList();
+    loadQuiz(selectedQuizId); // 重新載入當前題庫以刷新顯示
+    cancelAddQuestion(); // 關閉新增題目區塊
+    alert('題目已成功保存！');
 }
 
+
+// 取消新增題目
+function cancelAddQuestion() {
+    if (addQuestionToQuizSection) addQuestionToQuizSection.style.display = 'none';
+    if (quizManagementSection) quizManagementSection.style.display = 'block'; // 返回題庫管理
+    if (gameSettings) gameSettings.style.display = 'block'; // 確保遊戲設定也顯示
+    // 清空所有輸入框
+    if (questionInput) questionInput.value = '';
+    if (answerInput) answerInput.value = '';
+    if (mcQuestionInput) mcQuestionInput.value = '';
+    if (option1Input) option1Input.value = '';
+    if (option2Input) option2Input.value = '';
+    if (option3Input) option3Input.value = '';
+    if (option4Input) option4Input.value = '';
+    if (eventDescriptionInput) eventDescriptionInput.value = '';
+    if (eventPointsInput) eventPointsInput.value = 0;
+    if (pointsInput) pointsInput.value = 10; // 重置分數
+
+    // 重置題目類型選擇
+    if (questionTypeSelect) questionTypeSelect.value = 'normal_question';
+    // 取消後直接回到題庫管理介面，不需要再顯示新增題目區塊
+}
+
+// 渲染題庫列表 (用於管理介面)
+function renderQuizList() {
+    const quizListContainer = document.getElementById('quiz-list-container');
+    if (!quizListContainer) {
+        console.warn('quiz-list-container not found.');
+        return;
+    }
+    quizListContainer.innerHTML = '';
+
+    if (currentQuiz.questions.length === 0) {
+        quizListContainer.innerHTML = '<p>當前題庫中沒有題目。</p>';
+        return;
+    }
+
+    currentQuiz.questions.forEach((q, index) => {
+        const item = document.createElement('div');
+        item.classList.add('quiz-list-item');
+        let displayText = '';
+        if (q.type === 'normal_question') {
+            displayText = `標準題: ${q.question} (答: ${q.answer})`;
+        } else if (q.type === 'multiple_choice') {
+            displayText = `選擇題: ${q.question} (正確選項: ${q.options[q.correct_answer_index]})`;
+        } else if (q.type === 'event_card') {
+            displayText = `事件卡: ${q.description} (點數變化: ${q.points_change})`;
+        }
+
+        item.innerHTML = `
+            <span>${index + 1}. ${displayText}</span>
+            <div class="item-actions">
+                <button class="edit-question-button" data-index="${index}">編輯</button>
+                <button class="delete-question-button" data-index="${index}">刪除</button>
+            </div>
+        `;
+        quizListContainer.appendChild(item);
+    });
+
+    // 為編輯和刪除按鈕添加事件監聽器
+    quizListContainer.querySelectorAll('.edit-question-button').forEach(button => {
+        button.addEventListener('click', (e) => editQuestion(parseInt(e.target.dataset.index)));
+    });
+    quizListContainer.querySelectorAll('.delete-question-button').forEach(button => {
+        button.addEventListener('click', (e) => deleteQuestion(parseInt(e.target.dataset.index)));
+    });
+}
+
+// 編輯題目（目前僅為提示）
+function editQuestion(index) {
+    alert(`編輯題目功能尚未實作，正在編輯第 ${index + 1} 題。`);
+    // 未來可以讀取題目數據並填充到新增題目表單中進行編輯
+    // const questionToEdit = currentQuiz.questions[index];
+    // // 這裡可以填寫邏輯來填充表單並切換到編輯模式
+    // showAddQuestionSection(questionToEdit.type);
+    // // 填充輸入框
+    // if (questionToEdit.type === 'normal_question') {
+    //     questionInput.value = questionToEdit.question;
+    //     answerInput.value = questionToEdit.answer;
+    // } else if (questionToEdit.type === 'multiple_choice') {
+    //     mcQuestionInput.value = questionToEdit.question;
+    //     option1Input.value = questionToEdit.options[0];
+    //     option2Input.value = questionToEdit.options[1];
+    //     option3Input.value = questionToEdit.options[2];
+    //     option4Input.value = questionToEdit.options[3];
+    //     correctOptionSelect.value = questionToEdit.correct_answer_index;
+    // } else if (questionToEdit.type === 'event_card') {
+    //     eventDescriptionInput.value = questionToEdit.description;
+    //     eventPointsInput.value = questionToEdit.points_change;
+    // }
+    // pointsInput.value = questionToEdit.points || 0; // 事件卡可能沒有 points
+    // // 可以添加一個隱藏的 input 來保存當前編輯的索引
+    // // 或者修改 saveQuestion 邏輯來判斷是新增還是更新
+}
+
+// 刪除題目
+function deleteQuestion(index) {
+    if (confirm(`確定要刪除第 ${index + 1} 題嗎？`)) {
+        currentQuiz.questions.splice(index, 1);
+        saveQuizzes();
+        renderQuizList(); // 重新渲染列表
+        alert('題目已刪除！');
+    }
+}
+
+
+// --- 事件監聽器 ---
+
+// 開始遊戲按鈕
+if (startGameButton) {
+    startGameButton.addEventListener('click', initializeGame);
+}
+
+// 顯示答案按鈕
+if (showAnswerButton) {
+    showAnswerButton.addEventListener('click', () => {
+        const cardIndex = parseInt(questionModal.dataset.cardIndex);
+        const question = currentQuestions[cardIndex];
+
+        if (question.type === 'normal_question') {
+            correctAnswerDisplay.textContent = `正確答案: ${question.answer}`;
+        }
+        // 對於選擇題，正確答案已經在 handleOptionClick 處理過了
+        correctAnswerDisplay.style.display = 'block';
+        showAnswerButton.style.display = 'none'; // 隱藏顯示答案按鈕
+        judgmentButtons.style.display = 'flex'; // 顯示判斷按鈕
+    });
+}
+
+// 標記正確按鈕
+if (markCorrectButton) {
+    markCorrectButton.addEventListener('click', () => {
+        const cardIndex = parseInt(questionModal.dataset.cardIndex);
+        const question = currentQuestions[cardIndex];
+        players[currentPlayerIndex].score += question.points;
+        updatePlayerScores();
+        feedbackElement.textContent = '分數已增加！';
+        feedbackElement.style.color = '#4CAF50';
+        markCardAsAnswered(cardIndex);
+        setTimeout(() => {
+            hideQuestionModal();
+            nextTurn();
+        }, 1500); // 1.5秒後關閉並換下一位玩家
+    });
+}
+
+// 標記錯誤按鈕
+if (markIncorrectButton) {
+    markIncorrectButton.addEventListener('click', () => {
+        const cardIndex = parseInt(questionModal.dataset.cardIndex);
+        // 不扣分，只是標記為錯誤
+        feedbackElement.textContent = '回答錯誤，不加分。';
+        feedbackElement.style.color = '#F44336';
+        markCardAsAnswered(cardIndex);
+        setTimeout(() => {
+            hideQuestionModal();
+            nextTurn();
+        }, 1500); // 1.5秒後關閉並換下一位玩家
+    });
+}
+
+// 關閉問題模態框
+if (closeButton) {
+    closeButton.addEventListener('click', hideQuestionModal);
+}
+
+// 點擊模態框外部關閉 (可以選擇性啟用)
+if (questionModal) {
+    questionModal.addEventListener('click', (e) => {
+        if (e.target === questionModal) {
+            hideQuestionModal();
+        }
+    });
+}
+
+// --- 題庫管理事件監聽器 ---
+
+// 選擇題庫時觸發載入
+if (quizSelect) {
+    quizSelect.addEventListener('change', (event) => {
+        loadQuiz(event.target.value);
+        renderQuizList(); // 重新渲染題目列表
+    });
+}
+
+// 新增題庫按鈕
+if (addQuizButton) {
+    addQuizButton.addEventListener('click', () => {
+        const quizName = prompt('請輸入新題庫的名稱:');
+        if (quizName && quizName.trim() !== '') {
+            const newQuizId = generateUniqueId();
+            allQuizzes[newQuizId] = {
+                id: newQuizId,
+                name: quizName.trim(),
+                questions: []
+            };
+            selectedQuizId = newQuizId; // 自動選擇新創建的題庫
+            saveQuizzes();
+            populateQuizSelect();
+            loadQuiz(newQuizId); // 載入新題庫
+            renderQuizList(); // 渲染空題庫列表
+            alert(`題庫 "${quizName.trim()}" 已創建！`);
+        } else {
+            alert('題庫名稱不能為空。');
+        }
+    });
+}
+
+// 刪除題庫按鈕
+if (deleteQuizButton) {
+    deleteQuizButton.addEventListener('click', () => {
+        if (Object.keys(allQuizzes).length === 1) {
+            alert('至少需要保留一個題庫！');
+            return;
+        }
+        if (confirm(`確定要刪除題庫 "${currentQuiz.name}" 嗎？所有題目將會遺失！`)) {
+            delete allQuizzes[selectedQuizId];
+            // 重新選擇第一個題庫作為當前題庫
+            selectedQuizId = Object.keys(allQuizzes)[0];
+            loadQuiz(selectedQuizId);
+            saveQuizzes();
+            populateQuizSelect();
+            renderQuizList();
+            alert('題庫已刪除！');
+        }
+    });
+}
+
+// 匯出題庫按鈕
+if (exportQuizButton) {
+    exportQuizButton.addEventListener('click', () => {
+        if (currentQuiz.questions.length === 0) {
+            alert('當前題庫中沒有題目可以匯出。');
+            return;
+        }
+        const quizData = JSON.stringify(currentQuiz.questions, null, 2); // 格式化 JSON
+        const blob = new Blob([quizData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentQuiz.name}_quiz.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        alert(`題庫 "${currentQuiz.name}" 已匯出！`);
+    });
+}
+
+// 匯入題庫按鈕
+if (importQuizButton) {
+    importQuizButton.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importedQuestions = JSON.parse(event.target.result);
+                        // 簡單驗證匯入的數據是否為陣列
+                        if (Array.isArray(importedQuestions) && importedQuestions.every(q => typeof q === 'object' && q !== null && q.type)) {
+                            const quizName = prompt('請輸入匯入題庫的名稱:');
+                            if (quizName && quizName.trim() !== '') {
+                                const newQuizId = generateUniqueId();
+                                allQuizzes[newQuizId] = {
+                                    id: newQuizId,
+                                    name: quizName.trim(),
+                                    questions: importedQuestions
+                                };
+                                selectedQuizId = newQuizId; // 自動選擇匯入的題庫
+                                saveQuizzes();
+                                populateQuizSelect();
+                                loadQuiz(newQuizId);
+                                renderQuizList();
+                                alert(`題庫 "${quizName.trim()}" 已成功匯入！`);
+                            } else {
+                                alert('題庫名稱無效，匯入已取消。');
+                            }
+                        } else {
+                            alert('匯入的 JSON 檔案格式不正確。請確保它包含有效的普通問題、選擇題或事件卡物件的陣列。');
+                        }
+                    } catch (error) {
+                        alert('讀取檔案時發生錯誤或檔案不是有效的 JSON 格式。');
+                        console.error('Error importing quiz:', error);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    });
+}
+
+
+if (closeFinalScoreModalButton) {
+    closeFinalScoreModalButton.addEventListener('click', () => {
+        if (finalScoreModal) finalScoreModal.classList.remove('show-modal');
+        setTimeout(() => {
+            if (finalScoreModal) finalScoreModal.style.display = 'none';
+            resetGame();
+        }, 300);
+    });
+}
+
+if (restartGameButton) {
+    restartGameButton.addEventListener('click', () => {
+        if (finalScoreModal) finalScoreModal.classList.remove('show-modal');
+        setTimeout(() => {
+            if (finalScoreModal) finalScoreModal.style.display = 'none';
+            resetGame();
+        }, 300);
+    });
+}
 
 // --- 初始化 ---
+
+// 頁面載入完成時
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOMContentLoaded 事件觸發！");
-    console.log("script.js 文件已成功加載！");
-
-    // UI 元素獲取
-    gameSettings = document.getElementById('game-settings');
-    startGameButton = document.getElementById('start-game-button');
-    numPlayersInput = document.getElementById('num-players');
-    numQuestionsInput = document.getElementById('num-questions');
-    gameContainer = document.getElementById('game-container');
-    gameBoard = document.getElementById('game-board');
-    questionModal = document.getElementById('question-modal');
-    questionText = document.getElementById('question-text');
-    showAnswerButton = document.getElementById('show-answer-button');
-    correctAnswerDisplay = document.getElementById('correct-answer-display');
-    judgmentButtonsDiv = document.querySelector('.judgment-buttons');
-    markCorrectButton = document.getElementById('mark-correct-button');
-    markIncorrectButton = document.getElementById('mark-incorrect-button');
-    feedbackDiv = document.getElementById('feedback');
-    closeButton = document.querySelector('.close-button');
-    playerScoresDiv = document.getElementById('player-scores');
-    currentPlayerDisplay = document.getElementById('current-player-display');
-
-    // 題庫管理相關元素獲取
-    quizSelect = document.getElementById('quiz-select');
-    addQuizButton = document.getElementById('add-quiz-button');
-    deleteQuizButton = document.getElementById('delete-quiz-button');
-    addQuestionToQuizSection = document.getElementById('add-question-to-quiz-section');
-    currentQuizNameSpan = document.getElementById('current-quiz-name');
-    questionTypeSelect = document.getElementById('question-type-select');
-
-    // 不同題目類型輸入框容器
-    normalQuestionFields = document.getElementById('normal-question-fields');
-    multipleChoiceFields = document.getElementById('multiple-choice-fields');
-    eventCardFields = document.getElementById('event-card-fields');
-
-    // 普通問題輸入框
-    newQuestionTextNormal = document.getElementById('new-question-text-normal');
-    newPoints = document.getElementById('new-points');
-
-    // 選擇題輸入框
-    newQuestionTextMC = document.getElementById('new-question-text-mc');
-    mcOption1 = document.getElementById('mc-option-1');
-    mcOption2 = document.getElementById('mc-option-2');
-    mcOption3 = document.getElementById('mc-option-3');
-    mcOption4 = document.getElementById('mc-option-4');
-    mcCorrectAnswerIndex = document.getElementById('mc-correct-answer-index');
-    newPointsMC = document.getElementById('new-points-mc');
-
-    // 事件卡輸入框
-    eventQuestionText = document.getElementById('new-question-text-event');
-    eventTypeSelect = document.getElementById('event-type-select');
-    addQuestionToQuizButton = document.getElementById('add-question-to-quiz-button');
-
-    // 模態框內的選擇題選項按鈕
-    multipleChoiceOptionsDiv = document.getElementById('multiple-choice-options');
-    mcOptionButtons = document.querySelectorAll('.mc-option-button');
-
-    // 新增的匯入匯出按鈕獲取
-    importQuizButton = document.getElementById('import-quiz-button');
-    exportQuizButton = document.getElementById('export-quiz-button');
-
-    // 最終得分彈窗元素獲取
-    finalScoreModal = document.getElementById('final-score-modal');
-    closeFinalScoreModalButton = document.getElementById('close-final-score-modal');
-    finalScoresDisplay = document.getElementById('final-scores-display');
-    restartGameButton = document.getElementById('restart-game-button');
-
-
-    // 增加調試訊息，確認是否所有核心元素都已被正確獲取
-    console.log("DOMContentLoaded 內初始化 startGameButton:", startGameButton);
-    console.log("DOMContentLoaded 內初始化 feedbackDiv:", feedbackDiv);
-    console.log("DOMContentLoaded 內初始化 addQuizButton:", addQuizButton);
-    console.log("DOMContentLoaded 內初始化 multipleChoiceOptionsDiv:", multipleChoiceOptionsDiv);
-    console.log("DOMContentLoaded 內初始化 mcOptionButtons (NodeList):", mcOptionButtons);
-
-
-    // 將所有事件監聽器放在這裡，確保相關元素已經被獲取
-    if (startGameButton) {
-        startGameButton.addEventListener('click', () => {
-            const numPlayers = parseInt(numPlayersInput.value);
-            const numQuestions = parseInt(numQuestionsInput.value);
-
-            if (numPlayers < 2 || numQuestions < 5) {
-                alert('玩家數量至少為 2，題目數量至少為 5！');
-                return;
-            }
-            if (numQuestions > questions.length) {
-                alert(`題目數量不能超過當前題庫中的總題目數 (${questions.length})！`);
-                return;
-            }
-            initializeGame(numPlayers, numQuestions);
-            if (gameSettings) gameSettings.style.display = 'none';
-            if (gameContainer) gameContainer.style.display = 'flex';
-        });
-    }
-
-    // 顯示答案按鈕，僅適用於普通問題
-    if (showAnswerButton) {
-        showAnswerButton.addEventListener('click', () => {
-            // 只在當前是普通問題時才執行 showAnswer
-            if (activeQuestionData && activeQuestionData.type === 'normal_question') {
-                showAnswer(activeQuestionData);
-            } else {
-                // 如果是選擇題，點擊此按鈕應該無效或給予提示
-                console.log("選擇題不需要顯示答案按鈕。");
-                // 可以在這裡添加一個簡短的提示，例如 feedbackDiv.textContent = '請直接點擊選項作答！';
-            }
-        });
-    }
-
-    // 普通問題的正確/錯誤判斷按鈕
-    if (markCorrectButton) {
-        markCorrectButton.addEventListener('click', () => {
-            if (activeQuestionData && activeQuestionData.type === 'normal_question') {
-                handlePlayerJudgment(true);
-            }
-        });
-    }
-
-    if (markIncorrectButton) {
-        markIncorrectButton.addEventListener('click', () => {
-            if (activeQuestionData && activeQuestionData.type === 'normal_question') {
-                handlePlayerJudgment(false);
-            }
-        });
-    }
-
-    // 模態框關閉按鈕
-    if (closeButton) {
-        closeButton.addEventListener('click', () => {
-            if (activeQuestionData && activeQuestionData.type === 'event_card') {
-                alert('請點擊「確定」按鈕來處理事件卡效果。');
-                return;
-            } else {
-                // 對於普通問題和選擇題，這裡的關閉應該由遊戲邏輯控制，而非直接點擊關閉
-                // 如果因為某些原因需要手動關閉，可以這樣判斷：
-                if (!currentQuestionCard.classList.contains('answered')) {
-                     // 只有在還沒作答時才允許手動關閉，並切換玩家
-                     closeQuestionModal();
-                     moveToNextPlayer();
-                     alert("您關閉了問題，請記得下次作答！"); // 提示玩家
-                } else {
-                    closeQuestionModal(); // 如果已作答，直接關閉即可
-                }
-            }
-        });
-    }
-
-    if (quizSelect) {
-        quizSelect.addEventListener('change', () => {
-            currentQuizName = quizSelect.value;
-            localStorage.setItem('currentQuizName', currentQuizName);
-            questions = quizSets[currentQuizName];
-            if (currentQuizNameSpan) currentQuizNameSpan.textContent = currentQuizName;
-        });
-    }
-
-    if (addQuizButton) {
-        addQuizButton.addEventListener('click', handleAddQuizButton);
-    }
-
-    if (deleteQuizButton) {
-        deleteQuizButton.addEventListener('click', () => {
-            if (currentQuizName === 'default') {
-                alert('不能刪除預設題庫。');
-                return;
-            }
-            if (confirm(`確定要刪除題庫 "${currentQuizName}" 嗎？這將無法復原！`)) {
-                delete quizSets[currentQuizName];
-                saveQuizSets();
-                currentQuizName = Object.keys(quizSets)[0] || 'default';
-                loadQuizSets();
-                alert(`題庫 "${currentQuizName}" 已刪除！`);
-            }
-        });
-    }
-
-    if (questionTypeSelect) {
-        questionTypeSelect.addEventListener('change', toggleQuestionFields);
-    }
-
-    if (addQuestionToQuizButton) {
-        addQuestionToQuizButton.addEventListener('click', addQuestionToQuizButtonClickHandler);
-    }
-
-    if (exportQuizButton) {
-        exportQuizButton.addEventListener('click', () => {
-            const quizData = JSON.stringify(quizSets[currentQuizName], null, 2);
-            const blob = new Blob([quizData], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${currentQuizName}_quiz.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            alert('題庫已匯出！');
-        });
-    }
-
-    if (importQuizButton) {
-        importQuizButton.addEventListener('click', () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = event => {
-                        try {
-                            const importedQuestions = JSON.parse(event.target.result);
-                            const isValidFormat = Array.isArray(importedQuestions) && importedQuestions.every(q => {
-                                if (q.type === 'normal_question') {
-                                    return 'question' in q && 'answer' in q && 'points' in q;
-                                } else if (q.type === 'multiple_choice') {
-                                    return 'question' in q && 'options' in q && Array.isArray(q.options) && q.options.length === 4 && 'correct_answer_index' in q && 'points' in q;
-                                } else if (q.type === 'event_card') {
-                                    return 'question' in q && 'event_description' in q && 'event_type' in q && 'points' in q;
-                                }
-                                return false;
-                            });
-
-                            if (isValidFormat) {
-                                const newQuizName = prompt('請輸入匯入題庫的名稱：(如果名稱已存在將會覆蓋)', '新匯入題庫');
-                                if (newQuizName && newQuizName.trim() !== '') {
-                                    quizSets[newQuizName] = importedQuestions;
-                                    saveQuizSets();
-                                    loadQuizSets();
-                                    if (quizSelect) quizSelect.value = newQuizName;
-                                    currentQuizName = newQuizName;
-                                    questions = quizSets[currentQuizName];
-                                    if (currentQuizNameSpan) currentQuizNameSpan.textContent = newQuizName;
-                                    alert(`題庫 \"${newQuizName}\" 已成功匯入！`);
-                                } else {
-                                    alert('題庫名稱無效，匯入已取消。');
-                                }
-                            } else {
-                                alert('匯入的 JSON 檔案格式不正確。請確保它包含有效的普通問題、選擇題或事件卡物件的陣列。');
-                            }
-                        } catch (error) {
-                            alert('讀取檔案時發生錯誤或檔案不是有效的 JSON 格式。');
-                            console.error('Error importing quiz:', error);
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            input.click();
-        });
-    }
-
-    if (closeFinalScoreModalButton) {
-        closeFinalScoreModalButton.addEventListener('click', () => {
-            if (finalScoreModal) finalScoreModal.classList.remove('show-modal');
-            setTimeout(() => {
-                if (finalScoreModal) finalScoreModal.style.display = 'none';
-                resetGame();
-            }, 300);
-        });
-    }
-
-    if (restartGameButton) {
-        restartGameButton.addEventListener('click', () => {
-            if (finalScoreModal) finalScoreModal.classList.remove('show-modal');
-            setTimeout(() => {
-                if (finalScoreModal) finalScoreModal.style.display = 'none';
-                resetGame();
-            }, 300);
-        });
-    }
-
-
-    // 初始化時調用
-    populateEventTypeSelect();
-    loadQuizSets();
-    resetGame();
+    loadQuizzes(); // 載入所有題庫
+    populateQuizSelect(); // 載入時填充下拉選單
+    renderQuizList(); // 渲染當前選中題庫的題目列表
+    // 移除這裡的 showAddQuestionSection 調用，改為透過按鈕觸發
 });
+
+
+// Fisher-Yates (Knuth) shuffle algorithm
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    }
+    return array;
+}
+
+
+// --- 新增題目區塊的事件監聽器 ---
+
+// 題目類型選擇變化時
+if (questionTypeSelect) {
+    questionTypeSelect.addEventListener('change', (event) => {
+        showAddQuestionSection(event.target.value);
+    });
+}
+
+// 儲存題目按鈕
+if (saveQuestionButton) {
+    saveQuestionButton.addEventListener('click', saveQuestion);
+}
+
+// 取消新增題目按鈕
+if (cancelAddQuestionButton) {
+    cancelAddQuestionButton.addEventListener('click', cancelAddQuestion);
+}
+
+// 處理點擊「新增題目」按鈕顯示新增題目區塊
+// 必須確保這個按鈕的監聽器在 DOMContentLoaded 後被設定
+// 且在 DOM 元素 showAddQuestionSectionButton 宣告之後
+if (showAddQuestionSectionButton) {
+    showAddQuestionSectionButton.addEventListener('click', () => {
+        showAddQuestionSection('normal_question'); // 點擊新增題目時，預設顯示標準題目類型
+    });
+}
