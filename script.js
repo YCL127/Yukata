@@ -1,63 +1,6 @@
 // script.js
 
-// --- DOM 元素獲取 ---
-const startGameButton = document.getElementById('start-game-button');
-const numPlayersInput = document.getElementById('num-players');
-const numQuestionsInput = document.getElementById('num-questions');
-const gameSettings = document.getElementById('game-settings');
-const gameContainer = document.getElementById('game-container');
-const currentPlayerDisplay = document.getElementById('current-player-display');
-const playerScoresContainer = document.getElementById('player-scores');
-const gameBoard = document.getElementById('game-board');
-const questionModal = document.getElementById('question-modal');
-const closeButton = document.querySelector('.close-button');
-const questionTextElement = document.getElementById('question-text');
-const showAnswerButton = document.getElementById('show-answer-button');
-const correctAnswerDisplay = document.getElementById('correct-answer-display');
-const judgmentButtons = document.querySelector('.judgment-buttons');
-const markCorrectButton = document.getElementById('mark-correct-button');
-const markIncorrectButton = document.getElementById('mark-incorrect-button');
-const feedbackElement = document.getElementById('feedback');
-const finalScoreModal = document.getElementById('final-score-modal');
-const closeFinalScoreModalButton = document.getElementById('close-final-score-modal');
-const finalScoresDisplay = document.getElementById('final-scores-display');
-const restartGameButton = document.getElementById('restart-game-button');
 
-// --- 題庫管理 DOM 元素 ---
-const quizManagementSection = document.getElementById('quiz-management-section');
-const quizSelect = document.getElementById('quiz-select');
-const addQuizButton = document.getElementById('add-quiz-button');
-const deleteQuizButton = document.getElementById('delete-quiz-button');
-const importQuizButton = document.getElementById('import-quiz-button');
-const exportQuizButton = document.getElementById('export-quiz-button');
-const addQuestionToQuizSection = document.getElementById('add-question-to-quiz-section');
-const showAddQuestionSectionButton = document.getElementById('show-add-question-section-button');
-const questionTypeSelect = document.getElementById('question-type-select');
-
-// 新增題目相關的輸入框們
-const normalQuestionInputs = document.getElementById('normal-question-inputs');
-const questionInput = document.getElementById('question-input');
-const answerInput = document.getElementById('answer-input');
-
-const multipleChoiceInputs = document.getElementById('multiple-choice-inputs');
-const mcQuestionInput = document.getElementById('mc-question-input');
-const option1Input = document.getElementById('option1-input');
-const option2Input = document.getElementById('option2-input');
-const option3Input = document.getElementById('option3-input');
-const option4Input = document.getElementById('option4-input');
-const correctOptionSelect = document.getElementById('correct-option-select');
-const multipleChoiceOptionsContainer = document.getElementById('multiple-choice-options'); // 用於顯示選擇題選項
-
-const eventCardInputs = document.getElementById('event-card-inputs');
-const eventDescriptionInput = document.getElementById('event-description-input');
-const eventPointsInput = document.getElementById('event-points-input');
-
-const pointsInput = document.getElementById('points-input');
-const saveQuestionButton = document.getElementById('save-question-button');
-const cancelAddQuestionButton = document.getElementById('cancel-add-question-button');
-
-// 按鈕群組 (用於新增題目區塊的儲存/取消) - 這裡現在應該能找到元素了
-const buttonGroup = addQuestionToQuizSection ? addQuestionToQuizSection.querySelector('.button-group') : null;
 
 // --- 遊戲狀態變數 ---
 let players = [];
@@ -922,6 +865,64 @@ if (restartGameButton) {
 
 // 頁面載入完成時
 document.addEventListener('DOMContentLoaded', () => {
+    // --- DOM 元素獲取 ---
+const startGameButton = document.getElementById('start-game-button');
+const numPlayersInput = document.getElementById('num-players');
+const numQuestionsInput = document.getElementById('num-questions');
+const gameSettings = document.getElementById('game-settings');
+const gameContainer = document.getElementById('game-container');
+const currentPlayerDisplay = document.getElementById('current-player-display');
+const playerScoresContainer = document.getElementById('player-scores');
+const gameBoard = document.getElementById('game-board');
+const questionModal = document.getElementById('question-modal');
+const closeButton = document.querySelector('.close-button');
+const questionTextElement = document.getElementById('question-text');
+const showAnswerButton = document.getElementById('show-answer-button');
+const correctAnswerDisplay = document.getElementById('correct-answer-display');
+const judgmentButtons = document.querySelector('.judgment-buttons');
+const markCorrectButton = document.getElementById('mark-correct-button');
+const markIncorrectButton = document.getElementById('mark-incorrect-button');
+const feedbackElement = document.getElementById('feedback');
+const finalScoreModal = document.getElementById('final-score-modal');
+const closeFinalScoreModalButton = document.getElementById('close-final-score-modal');
+const finalScoresDisplay = document.getElementById('final-scores-display');
+const restartGameButton = document.getElementById('restart-game-button');
+
+// --- 題庫管理 DOM 元素 ---
+const quizManagementSection = document.getElementById('quiz-management-section');
+const quizSelect = document.getElementById('quiz-select');
+const addQuizButton = document.getElementById('add-quiz-button');
+const deleteQuizButton = document.getElementById('delete-quiz-button');
+const importQuizButton = document.getElementById('import-quiz-button');
+const exportQuizButton = document.getElementById('export-quiz-button');
+const addQuestionToQuizSection = document.getElementById('add-question-to-quiz-section');
+const showAddQuestionSectionButton = document.getElementById('show-add-question-section-button');
+const questionTypeSelect = document.getElementById('question-type-select');
+
+// 新增題目相關的輸入框們
+const normalQuestionInputs = document.getElementById('normal-question-inputs');
+const questionInput = document.getElementById('question-input');
+const answerInput = document.getElementById('answer-input');
+
+const multipleChoiceInputs = document.getElementById('multiple-choice-inputs');
+const mcQuestionInput = document.getElementById('mc-question-input');
+const option1Input = document.getElementById('option1-input');
+const option2Input = document.getElementById('option2-input');
+const option3Input = document.getElementById('option3-input');
+const option4Input = document.getElementById('option4-input');
+const correctOptionSelect = document.getElementById('correct-option-select');
+const multipleChoiceOptionsContainer = document.getElementById('multiple-choice-options'); // 用於顯示選擇題選項
+
+const eventCardInputs = document.getElementById('event-card-inputs');
+const eventDescriptionInput = document.getElementById('event-description-input');
+const eventPointsInput = document.getElementById('event-points-input');
+
+const pointsInput = document.getElementById('points-input');
+const saveQuestionButton = document.getElementById('save-question-button');
+const cancelAddQuestionButton = document.getElementById('cancel-add-question-button');
+
+// 按鈕群組 (用於新增題目區塊的儲存/取消) - 這裡現在應該能找到元素了
+const buttonGroup = addQuestionToQuizSection ? addQuestionToQuizSection.querySelector('.button-group') : null;
     loadQuizzes(); // 載入所有題庫
     populateQuizSelect(); // 載入時填充下拉選單
     renderQuizList(); // 渲染當前選中題庫的題目列表
