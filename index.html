@@ -1,177 +1,48 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2025 分組答題遊戲</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>2025 分組答題遊戲</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>2025 分組答題遊戲</h1>
-    </header>
-
-    <main>
-        <div id="game-settings" class="settings-section">
-            <h2>遊戲設定</h2>
-            <div class="setting-item">
-                <label for="num-players">玩家數量:</label>
-                <input type="number" id="num-players" min="2" value="2">
-            </div>
-            <div class="setting-item">
-                <label for="num-questions">題目數量:</label>
-                <input type="number" id="num-questions" min="5" max="20" value="10">
-            </div>
-            <button id="start-game-button">開始遊戲</button>
-<div id="player-info" style="margin: 1em 0; font-weight: bold; color: #333;"></div>
-
-            <div id="quiz-management-section" class="settings-section">
-                <h3>題庫管理</h3>
-                <div class="setting-item">
-                    <label for="quiz-select">選擇題庫:</label>
-                    <select id="quiz-select"></select>
-                </div>
-                <div class="button-group">
-                    <button id="add-quiz-button">新增題庫</button>
-                    <button id="delete-quiz-button">刪除題庫</button>
-                    <button id="import-quiz-button">匯入題庫</button>
-                    <button id="export-quiz-button">匯出題庫</button>
-                </div>
-
-                <h4>當前題庫題目列表</h4>
-                <ul id="quiz-question-list" class="quiz-list-container"></ul>
-
-                <div class="button-group">
-                    <button id="show-add-question-section-button" class="add-question-button">新增題目</button>
-                    <button id="test-mode-button">測驗模式</button>
-                </div>
-            </div>
-
-            <div id="add-question-to-quiz-section" class="settings-section" style="display: none;">
-                <h3>新增/編輯題目</h3>
-                <div class="setting-item">
-                    <label for="question-type-select">題目類型:</label>
-                    <select id="question-type-select">
-                        <option value="normal_question">標準問答題</option>
-                        <option value="multiple_choice">選擇題</option>
-                        <option value="true_false">是非題</option>
-                        <option value="event_card">事件卡</option>
-                    </select>
-                </div>
-
-                <div id="normal-question-inputs" style="display: none;">
-                    <div class="setting-item">
-                        <label for="question-input">題目:</label>
-                        <textarea id="question-input" rows="3" placeholder="輸入題目內容"></textarea>
-                    </div>
-                    <div class="setting-item">
-                        <label for="answer-input">答案:</label>
-                        <input type="text" id="answer-input" placeholder="輸入答案">
-                    </div>
-                </div>
-
-                <div id="multiple-choice-inputs" style="display: none;">
-                    <div class="setting-item">
-                        <label for="mc-question-input">選擇題題目:</label>
-                        <textarea id="mc-question-input" rows="3" placeholder="輸入選擇題題目內容"></textarea>
-                    </div>
-                    <div class="setting-item"> <label for="option1-input">選項 A:</label> <input type="text" id="option1-input" placeholder="選項 A"> </div>
-                    <div class="setting-item"> <label for="option2-input">選項 B:</label> <input type="text" id="option2-input" placeholder="選項 B"> </div>
-                    <div class="setting-item"> <label for="option3-input">選項 C:</label> <input type="text" id="option3-input" placeholder="選項 C"> </div>
-                    <div class="setting-item"> <label for="option4-input">選項 D:</label> <input type="text" id="option4-input" placeholder="選項 D"> </div>
-                    <div class="setting-item">
-                        <label for="correct-option-select">正確答案:</label>
-                        <select id="correct-option-select">
-                            <option value="0">A</option> <option value="1">B</option> <option value="2">C</option> <option value="3">D</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="true-false-inputs" style="display: none;">
-                     <div class="setting-item">
-                        <label for="tf-question-input">是非題題目:</label>
-                        <textarea id="tf-question-input" rows="3" placeholder="輸入是非題題目內容"></textarea>
-                    </div>
-                    <div class="setting-item">
-                        <label for="tf-answer-select">正確答案:</label>
-                        <select id="tf-answer-select">
-                            <option value="true">是 (O)</option>
-                            <option value="false">非 (X)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="event-card-inputs" style="display: none;">
-                    <div class="setting-item">
-                        <label for="event-description-input">事件描述:</label>
-                        <textarea id="event-description-input" rows="3" placeholder="輸入事件描述（例如：全體加10分）"></textarea>
-                    </div>
-                    <div class="setting-item">
-                        <label for="event-action-select">事件類型:</label>
-                        <select id="event-action-select">
-                            <option value="add_subtract_current">當前玩家加/扣分</option>
-                            <option value="add_subtract_all">全體玩家加/扣分</option>
-                            <option value="double_current">分數加倍 (當前玩家)</option>
-                            <option value="score_swap">隨機分數交換</option>
-                        </select>
-                    </div>
-                     <div class="setting-item" id="event-value-container">
-                        <label for="event-value-input">點數變化:</label>
-                        <input type="number" id="event-value-input" value="10" placeholder="輸入點數變化（正數為加，負數為減）">
-                    </div>
-                </div>
-
-                <div class="setting-item" id="points-input-container">
-                    <label for="points-input">分數 (答對可得):</label>
-                    <input type="number" id="points-input" min="1" value="10">
-                </div>
-
-                <div class="button-group">
-                    <button id="save-question-button">儲存題目</button>
-                    <button id="cancel-add-question-button">取消</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="game-container" style="display: none;">
-            <div id="score-board">
-                <p id="current-player-display"></p>
-                <div id="player-scores"></div>
-            </div>
-
-            <div id="game-board"></div>
-
-            <div id="question-modal" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2 id="question-text"></h2>
-                    <div id="multiple-choice-options" style="display: none;"></div>
-
-                    <button id="show-answer-button">顯示答案</button>
-                    <p id="correct-answer-display" style="display: none;"></p>
-                    <div class="judgment-buttons" style="display: none;">
-                        <button id="mark-correct-button" class="judgment-button correct-button">答對</button>
-                        <button id="mark-incorrect-button" class="judgment-button incorrect-button">答錯</button>
-                    </div>
-                    <div id="feedback"></div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy;2025 分組答題遊戲</p>
-    </footer>
-
-    <div id="final-score-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="close-final-score-modal">&times;</span>
-            <h2>遊戲結束！最終得分</h2>
-            <div id="final-scores-display"></div>
-            <button id="restart-game-button">重新開始</button>
-        </div>
+  <div class="container">
+    <h1>2025 分組答題遊戲</h1>
+    <div>
+      <label>玩家數量：<input type="number" id="num-players" value="2"></label>
+      <label>題目數量：<input type="number" id="num-questions" value="10"></label>
+      <button id="start-game-button">開始遊戲</button>
+      <button id="start-test-btn">測驗模式</button>
+      <div id="player-info" style="margin-top:10px;"></div>
     </div>
 
-    <script src="script.js"></script>
+    <h2>題庫管理</h2>
+    <label>選擇題庫:
+      <select id="quiz-select"></select>
+    </label>
+    <div>
+      <button id="create-quiz-btn">新增題庫</button>
+      <button id="delete-quiz-btn">刪除題庫</button>
+      <button id="import-quiz-btn">匯入題庫</button>
+      <button id="export-quiz-btn">匯出題庫</button>
+    </div>
+
+    <h3>當前題庫題目列表</h3>
+    <ul id="question-list"></ul>
+    <button id="add-question-btn">新增題目</button>
+
+    <div id="game-board" class="game-board"></div>
+  </div>
+
+  <!-- 題目彈窗 -->
+  <div id="question-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3 id="question-text"></h3>
+      <div id="answer-options"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
