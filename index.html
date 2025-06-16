@@ -12,7 +12,7 @@
     </header>
 
     <main>
-        <div id="game-settings">
+        <div id="game-settings" class="settings-section">
             <h2>遊戲設定</h2>
             <div class="setting-item">
                 <label for="num-players">玩家數量:</label>
@@ -32,75 +32,104 @@
                 </div>
                 <div class="button-group">
                     <button id="add-quiz-button">新增題庫</button>
-                    <button id="delete-quiz-button">刪除當前題庫</button>
+                    <button id="delete-quiz-button">刪除題庫</button>
                     <button id="import-quiz-button">匯入題庫</button>
-                    <button id="export-quiz-button">匯出當前題庫</button>
+                    <button id="export-quiz-button">匯出題庫</button>
                 </div>
 
-                <div id="add-question-to-quiz-section" class="settings-section">
-                    <h4>新增題目到 "<span id="current-quiz-name">default</span>"</h4>
+                <h4>當前題庫題目列表</h4>
+                <div id="quiz-list-container" class="quiz-list-container">
+                    </div>
+
+                <div class="button-group">
+                    <button id="show-add-question-section-button" class="add-question-button">新增題目</button>
+                </div>
+            </div>
+
+            <div id="add-question-to-quiz-section" class="settings-section" style="display: none;">
+                <h3>新增題目</h3>
+                <div class="setting-item">
+                    <label for="question-type-select">題目類型:</label>
+                    <select id="question-type-select">
+                        <option value="normal_question">標準題目</option>
+                        <option value="multiple_choice">選擇題</option>
+                        <option value="event_card">事件卡</option>
+                    </select>
+                </div>
+
+                <div id="normal-question-inputs" style="display: none;">
                     <div class="setting-item">
-                        <label for="question-type-select">題目類型:</label>
-                        <select id="question-type-select">
-                            <option value="normal_question">普通問題</option>
-                            <option value="multiple_choice">選擇題</option> // 新增選擇題選項
-                            <option value="event_card">事件卡</option>
+                        <label for="question-input">題目:</label>
+                        <textarea id="question-input" rows="3" placeholder="輸入題目內容"></textarea>
+                    </div>
+                    <div class="setting-item">
+                        <label for="answer-input">答案:</label>
+                        <input type="text" id="answer-input" placeholder="輸入答案">
+                    </div>
+                </div>
+
+                <div id="multiple-choice-inputs" style="display: none;">
+                    <div class="setting-item">
+                        <label for="mc-question-input">選擇題題目:</label>
+                        <textarea id="mc-question-input" rows="3" placeholder="輸入選擇題題目內容"></textarea>
+                    </div>
+                    <div class="setting-item">
+                        <label for="option1-input">選項 A:</label>
+                        <input type="text" id="option1-input" placeholder="選項 A">
+                    </div>
+                    <div class="setting-item">
+                        <label for="option2-input">選項 B:</label>
+                        <input type="text" id="option2-input" placeholder="選項 B">
+                    </div>
+                    <div class="setting-item">
+                        <label for="option3-input">選項 C:</label>
+                        <input type="text" id="option3-input" placeholder="選項 C">
+                    </div>
+                    <div class="setting-item">
+                        <label for="option4-input">選項 D:</label>
+                        <input type="text" id="option4-input" placeholder="選項 D">
+                    </div>
+                    <div class="setting-item">
+                        <label for="correct-option-select">正確答案:</label>
+                        <select id="correct-option-select">
+                            <option value="0">A</option>
+                            <option value="1">B</option>
+                            <option value="2">C</option>
+                            <option value="3">D</option>
                         </select>
                     </div>
+                </div>
 
-                    <div id="normal-question-fields">
-                        <div class="setting-item">
-                            <label for="new-question-text-normal">問題內容:</label>
-                            <input type="text" id="new-question-text-normal" placeholder="輸入問題">
-                        </div>
-                        <div class="setting-item">
-                            <label for="new-points">分數:</label>
-                            <input type="number" id="new-points" min="1" value="10">
-                        </div>
+                <div id="event-card-inputs" style="display: none;">
+                    <div class="setting-item">
+                        <label for="event-description-input">事件描述:</label>
+                        <textarea id="event-description-input" rows="3" placeholder="輸入事件描述（例如：被懲罰、獲得獎勵）"></textarea>
                     </div>
+                    <div class="setting-item">
+                        <label for="event-points-input">事件點數:</label>
+                        <input type="number" id="event-points-input" value="0" placeholder="輸入點數變化（正數為獎勵，負數為懲罰）">
+                    </div>
+                </div>
 
-                    <div id="multiple-choice-fields" style="display: none;"> // 新增選擇題輸入區塊
-                        <div class="setting-item">
-                            <label for="new-question-text-mc">問題內容:</label>
-                            <input type="text" id="new-question-text-mc" placeholder="輸入選擇題問題">
-                        </div>
-                        <div class="setting-item">
-                            <label for="mc-option-1">選項 1:</label>
-                            <input type="text" id="mc-option-1" placeholder="選項 1">
-                        </div>
-                        <div class="setting-item">
-                            <label for="mc-option-2">選項 2:</label>
-                            <input type="text" id="mc-option-2" placeholder="選項 2">
-                        </div>
-                        <div class="setting-item">
-                            <label for="mc-option-3">選項 3:</label>
-                            <input type="text" id="mc-option-3" placeholder="選項 3">
-                        </div>
-                        <div class="setting-item">
-                            <label for="mc-option-4">選項 4:</label>
-                            <input type="text" id="mc-option-4" placeholder="選項 4">
-                        </div>
-                        <div class="setting-item">
-                            <label for="mc-correct-answer-index">正確答案 (選項編號):</label>
-                            <input type="number" id="mc-correct-answer-index" min="1" max="4" value="1" placeholder="輸入正確選項編號 (1-4)">
-                        </div>
-                         <div class="setting-item">
-                            <label for="new-points-mc">分數:</label>
-                            <input type="number" id="new-points-mc" min="1" value="10">
-                        </div>
-                    </div>
+                <div class="setting-item">
+                    <label for="points-input">分數 (標準/選擇題):</label>
+                    <input type="number" id="points-input" min="5" value="10">
+                </div>
+<div id="add-question-to-quiz-section" class="settings-section" style="display: none;">
+                <h3>新增題目</h3>
+                <div class="setting-item">
+                    <label for="points-input">分數 (標準/選擇題):</label>
+                    <input type="number" id="points-input" min="5" value="10">
+                </div>
 
-                    <div id="event-card-fields" style="display: none;">
-                        <div class="setting-item">
-                            <label for="new-question-text-event">事件描述:</label>
-                            <input type="text" id="new-question-text-event" placeholder="輸入事件描述 (例如: 全體加50分)">
-                        </div>
-                        <div class="setting-item">
-                            <label for="event-type-select">事件類型:</label>
-                            <select id="event-type-select"></select>
-                        </div>
-                    </div>
-                    <button id="add-question-to-quiz-button">新增題目</button>
+                <div class="button-group">
+                    <button id="save-question-button">儲存題目</button>
+                    <button id="cancel-add-question-button">取消</button>
+                </div>
+                </div>
+                <div class="button-group">
+                    <button id="save-question-button">儲存題目</button>
+                    <button id="cancel-add-question-button">取消</button>
                 </div>
             </div>
         </div>
@@ -119,12 +148,8 @@
                 <div class="modal-content">
                     <span class="close-button">&times;</span>
                     <h2 id="question-text"></h2>
-                    <div id="multiple-choice-options" style="display: none;">
-                        <button class="mc-option-button" data-option-index="0"></button>
-                        <button class="mc-option-button" data-option-index="1"></button>
-                        <button class="mc-option-button" data-option-index="2"></button>
-                        <button class="mc-option-button" data-option-index="3"></button>
-                    </div>
+                    <div id="multiple-choice-options" style="display: none;"></div>
+
                     <button id="show-answer-button">顯示答案</button>
                     <p id="correct-answer-display" style="display: none;"></p>
                     <div class="judgment-buttons" style="display: none;">
@@ -150,8 +175,6 @@
             <button id="restart-game-button">重新開始</button>
         </div>
     </div>
-
-    <div id="debug-info" style="position: fixed; bottom: 10px; right: 10px; background-color: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.8em; z-index: 1000;"></div>
 
     <script src="script.js"></script>
 </body>
