@@ -166,7 +166,7 @@ function nextTurn() {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadQuizzes();
-    document.getElementById('start-game-btn').onclick = startGame;
+    document.getElementById('start-game-button').onclick = startGame;
     document.getElementById('start-test-btn').onclick = startTestMode;
     document.getElementById('quiz-select').onchange = (e) => {
         selectedQuizId = e.target.value;
