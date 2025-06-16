@@ -6,11 +6,28 @@
 
 // ----範例：初始化與題庫處理（代表完整程式）----
 function loadQuizzes() {
-    const storedQuizzes = localStorage.getItem('allQuizzes');
-    if (storedQuizzes) {
-        try {
-            allQuizzes = JSON.parse(storedQuizzes);
-        } catch (e) {
+    try {
+        allQuizzes = JSON.parse(localStorage.getItem('allQuizzes') || '{}');
+    } catch (e) {
+        console.warn("題庫讀取失敗，將重置為預設題庫。");
+        allQuizzes = {};
+    }
+
+    if (!allQuizzes || Object.keys(allQuizzes).length === 0) {
+        allQuizzes = {
+            'default': {
+                id: 'default',
+                name: '預設題庫',
+                questions: defaultQuestions
+            }
+        };
+        saveQuizzes();
+    }
+
+    selectedQuizId = localStorage.getItem('selectedQuizId') || 'default';
+    if (!allQuizzes[selectedQuizId]) selectedQuizId = 'default';
+    currentQuiz = allQuizzes[selectedQuizId];
+} catch (e) {
             alert("題庫讀取失敗，將還原為預設。");
             allQuizzes = {};
         }
