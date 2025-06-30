@@ -27,45 +27,41 @@ main {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    align-items: center; /* 水平置中所有主要區塊 */
-    justify-content: flex-start; /* 讓內容從頂部開始 */
+    align-items: center;
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
 }
 
-/* 遊戲設定、得分板、新增題目區塊的共同樣式 */
 #game-settings,
 #score-board,
 #add-question-to-quiz-section,
 #quiz-management-section {
     background-color: #ffffff;
-    padding: 40px;
+    padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     margin-bottom: 20px;
-    width: 100%; /* 預設寬度 */
-    max-width: 500px; /* 將遊戲設定的格子調窄 */
-    box-sizing: border-box; /* 確保 padding 和 border 包含在寬度內 */
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
 }
 
-
-/* 遊戲設定專用調整 */
 #game-settings {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* 增加設定項之間的間距 */
+    gap: 15px;
 }
 
 .setting-item {
     display: flex;
-    flex-direction: column; /* 讓標籤和輸入框垂直排列 */
-    gap: 5px; /* 標籤和輸入框之間的間距 */
+    flex-direction: column;
+    gap: 5px;
 }
 
 .setting-item label {
     font-weight: bold;
-    color: #E65100; /* 深橘色標籤文字 */
+    color: #E65100;
 }
 
 .setting-item input[type="number"],
@@ -73,15 +69,15 @@ main {
 .setting-item input[type="text"],
 .setting-item textarea {
     padding: 10px;
-    border: 1px solid #FFCC80; /* 淺橘色邊框 */
+    border: 1px solid #FFCC80;
     border-radius: 6px;
     font-size: 1rem;
-    width: calc(100% - 22px); /* 調整寬度以考慮 padding 和 border */
+    width: 100%;
     box-sizing: border-box;
 }
 
 button, .button {
-    background-color: #FF9800; /* 橘色按鈕 */
+    background-color: #FF9800;
     color: white;
     border: none;
     padding: 12px 25px;
@@ -93,18 +89,13 @@ button, .button {
 }
 
 button:hover, .button:hover {
-    background-color: #FB8C00; /* 深一點的橘色 */
+    background-color: #FB8C00;
     transform: translateY(-2px);
-}
-
-button:active, .button:active {
-    background-color: #E65100; /* 更深的橘色 */
-    transform: translateY(0);
 }
 
 .button-group {
     display: flex;
-    flex-wrap: wrap; /* 允許換行 */
+    flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
     margin-top: 15px;
@@ -112,23 +103,29 @@ button:active, .button:active {
 
 .button-group button {
     flex-grow: 1;
-    min-width: 120px; /* 確保按鈕不會太小 */
+    min-width: 120px;
 }
 
-/* 遊戲容器 */
+button.delete-question-btn {
+    background-color: #d9534f;
+}
+
+button.edit-question-btn {
+    background-color: #5bc0de;
+}
+
 #game-container {
     display: none;
-    flex-direction: column; /* 使得分板和遊戲板垂直排列 */
+    flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 900px; /* 讓遊戲板在寬螢幕上不會太寬 */
+    max-width: 900px;
 }
 
-/* 得分板 */
 #score-board {
     padding: 20px;
     margin-bottom: 20px;
-    width: 100%; /* 讓得分板與遊戲設定寬度一致 */
+    width: 100%;
     box-sizing: border-box;
 }
 
@@ -141,38 +138,35 @@ button:active, .button:active {
 }
 
 .player-score {
-    background-color: #FFFDE7; /* 淺黃色背景 */
-    border: 1px solid #FFD54F; /* 柔和的黃色邊框 */
+    background-color: #FFFDE7;
+    border: 1px solid #FFD54F;
     padding: 10px 15px;
     border-radius: 8px;
     font-weight: bold;
-    color: #F57C00; /* 橘色文字 */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    color: #F57C00;
 }
 
 #current-player-display {
     font-size: 1.2rem;
     font-weight: bold;
-    color: #D84315; /* 醒目的深橘色 */
+    color: #D84315;
     text-align: center;
     margin-bottom: 15px;
 }
 
-/* 遊戲板 */
 #game-board {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* 更靈活的網格佈局 */
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 15px;
     padding: 20px;
-    background-color: #FFECB3; /* 淺橘黃色背景 */
+    background-color: #FFECB3;
     border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     width: 100%;
     box-sizing: border-box;
 }
 
 .question-card {
-    background-color: #FFB74D; /* 較深的橘色卡片 */
+    background-color: #FFB74D;
     color: white;
     display: flex;
     justify-content: center;
@@ -182,24 +176,22 @@ button:active, .button:active {
     font-size: 2rem;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease, opacity 0.3s ease;
-    aspect-ratio: 1 / 1; /* 保持卡片為正方形 */
+    transition: all 0.3s ease;
+    aspect-ratio: 1 / 1;
 }
 
 .question-card:hover {
-    background-color: #FFA726; /* 懸停時顏色變淺 */
+    background-color: #FFA726;
     transform: translateY(-5px);
 }
 
 .question-card.answered {
-    background-color: #E0E0E0; /* 灰色表示已回答 */
+    background-color: #E0E0E0;
     color: #9E9E9E;
     cursor: not-allowed;
-    opacity: 0.7;
     transform: none;
 }
 
-/* 彈窗樣式 */
 .modal {
     display: none;
     position: fixed;
@@ -211,7 +203,7 @@ button:active, .button:active {
     background-color: rgba(0,0,0,0.6);
     justify-content: center;
     align-items: center;
-    opacity: 0; /* 初始透明 */
+    opacity: 0;
     transition: opacity 0.3s ease;
 }
 
@@ -220,7 +212,7 @@ button:active, .button:active {
 }
 
 .modal-content {
-    background-color: #FFF8E1; /* 淺色背景 */
+    background-color: #FFF8E1;
     margin: auto;
     padding: 30px;
     border-radius: 15px;
@@ -229,17 +221,16 @@ button:active, .button:active {
     max-width: 500px;
     text-align: center;
     position: relative;
-    transform: translateY(-20px); /* 初始位置略高 */
+    transform: translateY(-20px);
     transition: transform 0.3s ease;
-    display: flex; /* 新增：讓內容能夠 flex 排列 */
-    flex-direction: column; /* 新增：垂直排列內容 */
-    align-items: center; /* 新增：水平置中內容 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .modal.show-modal .modal-content {
-    transform: translateY(0); /* 顯示時回到中心 */
+    transform: translateY(0);
 }
-
 
 .close-button {
     color: #AAAAAA;
@@ -254,30 +245,39 @@ button:active, .button:active {
 .close-button:hover,
 .close-button:focus {
     color: #333;
-    text-decoration: none;
-    cursor: pointer;
 }
 
 #question-text {
-    font-size: 2rem;
+    font-size: 1.8rem;
     margin-bottom: 20px;
-    color: #E65100; /* 深橘色文字 */
-    flex-grow: 1; /* 讓問題文本可以佔據更多空間 */
+    color: #E65100;
 }
 
-#show-answer-button {
-    background-color: #FFA726; /* 橘色按鈕 */
-    margin-bottom: 15px;
-    width: auto; /* 讓按鈕寬度根據內容自動調整 */
-    padding: 12px 25px; /* 保持舒適的內邊距 */
-    align-self: center; /* 讓按鈕在其 flex 容器中置中 */
+#multiple-choice-options {
+    display: flex;
+    flex-direction: column; /* 垂直排列 */
+    gap: 10px;
+    width: 100%;
+    margin: 15px 0;
 }
 
-#correct-answer-display {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 15px;
+.mc-option-button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    font-size: 1.1rem;
+    background-color: #fff;
+    border: 2px solid #FFCC80;
+    color: #E65100;
+}
+
+.mc-option-button:hover {
+    background-color: #FFFDE7;
+}
+
+.mc-option-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .judgment-buttons {
@@ -285,7 +285,7 @@ button:active, .button:active {
     justify-content: center;
     gap: 20px;
     margin-top: 20px;
-    width: 100%; /* 確保按鈕組佔滿容器寬度 */
+    width: 100%;
 }
 
 .judgment-button {
@@ -296,242 +296,104 @@ button:active, .button:active {
 }
 
 .correct-button {
-    background-color: #66BB6A; /* 綠色 */
-}
-
-.correct-button:hover {
-    background-color: #4CAF50;
+    background-color: #66BB6A;
 }
 
 .incorrect-button {
-    background-color: #EF5350; /* 紅色 */
-}
-
-.incorrect-button:hover {
-    background-color: #F44336;
+    background-color: #EF5350;
 }
 
 #feedback {
     margin-top: 20px;
     font-size: 1.3rem;
     font-weight: bold;
-    color: #333;
 }
 
-#confirm-event-button {
-    background-color: #2196F3; /* 藍色確認按鈕 */
-    margin-top: 20px;
-    width: auto; /* 讓按鈕寬度根據內容自動調整 */
-    padding: 12px 25px; /* 保持舒適的內邊距 */
-    align-self: center; /* 讓按鈕在其 flex 容器中置中 */
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1em 0;
+    width: 100%;
+    margin-top: auto;
 }
 
-#confirm-event-button:hover {
-    background-color: #1976D2;
-}
-
-
-/* 最終得分彈窗 */
-#final-score-modal .modal-content {
-    background-color: #FFFDE7; /* 淺黃色背景 */
-    padding: 40px;
-}
-
-#final-score-modal h2 {
-    color: #E65100; /* 深橘色 */
-    margin-bottom: 25px;
-}
-
-#final-scores-display {
-    text-align: left;
-    margin-bottom: 30px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.player-final-score {
-    font-size: 1.5rem;
-    padding: 8px 0;
-    border-bottom: 1px dashed #FFCC80; /* 虛線分隔 */
-    color: #333;
-}
-
-.player-final-score:last-child {
-    border-bottom: none;
+#final-score-modal .modal-content h2 {
+    color: #E65100;
 }
 
 .player-final-score.winner {
-    color: #D32F2F; /* 紅色突出贏家 */
+    color: #D32F2F;
     font-weight: bold;
-    font-size: 1.7rem;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }
 
-#restart-game-button {
-    background-color: #FF9800;
-}
-
-/* 題庫管理區塊樣式 */
-#add-question-to-quiz-section {
-    margin-top: 20px;
-    padding: 30px;
-    max-width: 500px; /* 與遊戲設定保持一致 */
-}
-
-#add-question-to-quiz-section h3 {
-    margin-top: 0;
-    color: #E65100;
-    text-align: center;
-}
-
-#add-question-to-quiz-section .setting-item label {
-    font-size: 1.1rem;
-}
-
-#add-question-to-quiz-section button {
-    width: auto;
-    padding: 10px 20px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-}
-
-/* 文件匯入匯出按鈕的樣式 */
-#import-export-buttons {
+#quiz-question-list li {
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 4px;
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9f9f9;
 }
 
-#import-export-buttons button {
-    flex-grow: 1;
-    min-width: 100px;
-    background-color: #9C27B0; /* 紫色按鈕 */
+.item-actions button {
+    margin-left: 5px;
+    font-size: 0.8em;
+    padding: 4px 8px;
 }
 
-#import-export-buttons button:hover {
-    background-color: #8E24AA;
-}
-
-/* 響應式設計 */
+/* --- Media Queries for Responsive Design --- */
 @media (max-width: 768px) {
     h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
     }
 
     #game-settings,
     #score-board,
     #add-question-to-quiz-section,
     #quiz-management-section,
-    #game-container,
     .modal-content {
-        padding: 20px;
-        max-width: 95%; /* 小螢幕上佔用更多寬度 */
-    }
-
-    input[type="number"],
-    select,
-    input[type="text"],
-    textarea {
-        padding: 8px;
-        font-size: 0.9rem;
+        padding: 15px;
+        max-width: 95%;
     }
 
     button, .button {
-        font-size: 0.9rem;
-        padding: 10px;
+        font-size: 1rem;
+        padding: 10px 15px;
     }
 
     .button-group {
         flex-direction: column;
-        gap: 10px;
     }
 
     .question-card {
         font-size: 1.5rem;
-        height: 80px;
+        min-height: 80px;
     }
 
     #question-text {
         font-size: 1.5rem;
     }
+}
 
-    #correct-answer-display, #feedback {
+@media (max-width: 480px) {
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    #game-board {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+    }
+
+    #question-text {
         font-size: 1.2rem;
     }
 
-    .judgment-button {
-        font-size: 1rem;
-        padding: 10px 15px;
+    .judgment-buttons {
+        flex-direction: column;
+        gap: 10px;
     }
-
-    #player-answer-input {
-        padding: 10px;
-        font-size: 1rem;
-        width: calc(100% - 20px);
-    }
-
-    .player-score, #current-player-display {
-        font-size: 1.1rem;
-    }
-
-    .player-final-score {
-        font-size: 1.3rem;
-    }
-
-    .player-final-score.winner {
-        font-size: 1.5rem;
-    }
-
-    /* 確保模態框在小螢幕上正常顯示 */
-    .modal-content {
-        margin: 10px; /* 增加邊距以避免頂部/底部粘連 */
-        padding: 20px;
-        max-height: 90vh; /* 限制高度，防止內容過多時溢出 */
-        overflow-y: auto; /* 超出部分滾動 */
-    }
-    /* 新增選擇題選項按鈕的樣式 */
-#multiple-choice-options {
-    display: flex;
-    flex-wrap: wrap; /* 允許選項換行 */
-    justify-content: center;
-    gap: 10px; /* 按鈕之間的間距 */
-    margin-top: 15px;
-    margin-bottom: 15px;
-}
-
-.mc-option-button {
-    flex: 1 1 45%; /* 讓每個按鈕佔據大約一半寬度，實現兩列佈局 */
-    padding: 10px 15px;
-    font-size: 1.1em;
-    cursor: pointer;
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    transition: background-color 0.2s, border-color 0.2s;
-    min-width: 120px; /* 設置最小寬度避免過窄 */
-    box-sizing: border-box; /* 確保內邊距和邊框包含在寬度內 */
-}
-
-.mc-option-button:hover {
-    background-color: #e0e0e0;
-}
-
-.mc-option-button.selected {
-    background-color: #a7d9ff; /* 選中選項的顏色 */
-    border-color: #007bff;
-    font-weight: bold;
-}
-
-.mc-option-button.correct-option {
-    background-color: #d4edda; /* 正確答案的顏色 */
-    border-color: #28a745;
-    font-weight: bold;
-}
-
-.mc-option-button.answered-option {
-    pointer-events: none; /* 防止在答案顯示後再次點擊 */
-    opacity: 0.7;
-}
 }
