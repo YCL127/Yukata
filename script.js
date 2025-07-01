@@ -92,7 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const importQuizButton = document.getElementById('import-quiz-button');
     const exportQuizButton = document.getElementById('export-quiz-button');
     const quizQuestionList = document.getElementById('quiz-question-list');
+    
+    // 【修改2】獲取編輯 Modal 相關元素
+    const editQuizModal = document.getElementById('edit-quiz-modal');
+    const closeEditModalButton = document.getElementById('close-edit-modal');
     const addQuestionToQuizSection = document.getElementById('add-question-to-quiz-section');
+
     const showAddQuestionSectionButton = document.getElementById('show-add-question-section-button');
     const questionTypeSelect = document.getElementById('question-type-select');
     const normalQuestionInputs = document.getElementById('normal-question-inputs');
@@ -190,8 +195,11 @@ document.addEventListener('DOMContentLoaded', () => {
         eventPointsContainer.style.display = show ? 'flex' : 'none';
     }
 
+    // 【修改2】改為顯示 Modal
     function showAddQuestionSection(type = 'normal_question', questionToEdit = null, index = -1) {
-        addQuestionToQuizSection.style.display = 'block';
+        editQuizModal.style.display = 'flex';
+        editQuizModal.classList.add('show-modal');
+        
         editingQuestionIndex = index;
         [questionInput, answerInput, mcQuestionInput, option1Input, option2Input, option3Input, option4Input, eventDescriptionInput].forEach(i => i.value = '');
         [correctOptionSelect, eventPointsInput].forEach(i => i.value = '0');
@@ -232,8 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
         saveQuestionButton.textContent = editingQuestionIndex !== -1 ? '更新題目' : '儲存題目';
     }
 
+    // 【修改2】改為關閉 Modal
     function cancelAddQuestion() {
-        addQuestionToQuizSection.style.display = 'none';
+        editQuizModal.classList.remove('show-modal');
+        setTimeout(() => { editQuizModal.style.display = 'none'; }, 300);
         editingQuestionIndex = -1;
     }
 
@@ -340,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayQuestion(question, cardIndex) {
         [correctAnswerDisplay, judgmentButtons, multipleChoiceOptionsContainer].forEach(el => el.style.display = 'none');
-        feedbackElement.innerHTML = ''; // 改用 innerHTML, 清空內容
+        feedbackElement.innerHTML = '';
         showAnswerButton.style.display = 'block';
         questionModal.style.display = 'flex';
         questionModal.classList.add('show-modal');
@@ -370,7 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 【修改】將 question 物件傳給 handleAnswer
     function renderMultipleChoiceOptions(question, cardIndex) {
         multipleChoiceOptionsContainer.innerHTML = '';
         multipleChoiceOptionsContainer.style.display = 'flex';
@@ -381,20 +390,17 @@ document.addEventListener('DOMContentLoaded', () => {
             button.onclick = () => {
                 multipleChoiceOptionsContainer.querySelectorAll('button').forEach(b => b.disabled = true);
                 const isCorrect = index === question.correct_answer_index;
-                // 將 question 物件傳過去
                 handleAnswer(isCorrect, isCorrect ? question.points : 0, cardIndex, question);
             };
             multipleChoiceOptionsContainer.appendChild(button);
         });
     }
 
-    // 【修改】更新此函數以顯示正確答案和鼓勵
     function handleAnswer(isCorrect, points, cardIndex, question = null) {
         if (isCorrect) {
             players[currentPlayerIndex].score += points;
             feedbackElement.innerHTML = `<span style="color: green; font-weight: bold;">正確！獲得 ${points} 點。</span>`;
         } else {
-            // 檢查是否為選擇題答錯
             if (question && question.type === 'multiple_choice') {
                 const correctOptionLetter = String.fromCharCode(65 + question.correct_answer_index);
                 const correctOptionText = question.options[question.correct_answer_index];
@@ -403,7 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div>正確答案是： <strong>${correctOptionLetter}. ${correctOptionText}</strong></div>
                 `;
             } else {
-                // 如果是標準問答題答錯
                 feedbackElement.innerHTML = '<span style="color: red; font-weight: bold;">錯誤。</span>';
             }
         }
@@ -412,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             hideQuestionModal();
             nextTurn();
-        }, 2000); // 延長顯示時間讓玩家看清楚答案
+        }, 2000);
     }
     
     function applyEventCardEffect(eventCard) {
@@ -529,7 +534,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         const newId = generateUniqueId();
                         allQuizzes[newId] = { ...data, id: newId, name: data.name };
                         selectedQuizId = newId;
-                        saveQuizzes(); populateQuizSelect(); renderQuizList();
+                        // 【修改1】匯入後，更新 currentQuiz 變數以立即顯示
+                        currentQuiz = allQuizzes[newId];
+                        saveQuizzes();
+                        populateQuizSelect();
+                        renderQuizList();
                         alert(`題庫 "${data.name}" 已成功匯入！`);
                     } else { alert('檔案格式不正確。'); }
                 } catch (err) { alert('讀取檔案時發生錯誤。'); }
@@ -538,8 +547,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         input.click();
     });
+
     closeFinalScoreModalButton.addEventListener('click', () => { finalScoreModal.style.display = 'none'; resetGame(); });
     restartGameButton.addEventListener('click', () => { finalScoreModal.style.display = 'none'; resetGame(); });
+    
+    // 【修改2】為編輯 Modal 的關閉按鈕添加事件
+    closeEditModalButton.addEventListener('click', cancelAddQuestion);
+
     questionTypeSelect.addEventListener('change', (e) => showAddQuestionSection(e.target.value));
     eventTypeSelect.addEventListener('change', updateEventInputsVisibility);
     saveQuestionButton.addEventListener('click', saveOrUpdateQuestion);

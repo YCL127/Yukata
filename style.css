@@ -34,8 +34,8 @@ main {
     box-sizing: border-box;
 }
 
+/* 【修改2】移除 #add-question-to-quiz-section 的樣式，讓它由 modal 控制 */
 #game-settings,
-#add-question-to-quiz-section,
 #quiz-management-section {
     background-color: #ffffff;
     padding: 20px;
@@ -101,19 +101,15 @@ button:hover {
     max-width: 1200px; /* 稍微加寬遊戲容器 */
 }
 
-/* 【問題4修正】將分數欄固定在頂部 */
 #score-board {
     width: 100%;
     padding: 15px;
     box-sizing: border-box;
-    background-color: #fff3e0ea; /* 增加帶透明度的背景色，避免文字穿透 */
-    backdrop-filter: blur(5px); /* 增加毛玻璃效果，提升質感 */
-    
-    /* 核心設定 */
+    background-color: #fff3e0ea;
+    backdrop-filter: blur(5px);
     position: sticky;
     top: 0;
-    z-index: 100; /* 確保它在遊戲牌之上 */
-    
+    z-index: 100;
     border-bottom: 2px solid #FFB74D;
     margin-bottom: 20px;
 }
@@ -136,12 +132,11 @@ button:hover {
     transition: all 0.3s ease;
 }
 
-/* 【問題3修正】高亮顯示當前玩家 */
 .player-score.current {
     background-color: #FFB74D;
     color: white;
     border-color: #E65100;
-    transform: scale(1.1); /* 放大效果 */
+    transform: scale(1.1);
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
@@ -153,12 +148,10 @@ button:hover {
     text-align: center;
 }
 
-/* 【問題5修正】讓牌區能根據視窗大小自動排列 */
 #game-board {
     display: grid;
-    /* 核心設定：自動填充，每張牌最小120px，最大佔滿剩餘空間 */
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 20px; /* 加大間距 */
+    gap: 20px;
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
@@ -176,7 +169,7 @@ button:hover {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    aspect-ratio: 1 / 1; /* 保持卡片為正方形 */
+    aspect-ratio: 1 / 1;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
@@ -225,6 +218,22 @@ button:hover {
     align-items: center;
 }
 
+/* 【修改2】為編輯表單的 modal-content 添加特定樣式 */
+#add-question-to-quiz-section.modal-content {
+    max-width: 650px;       /* 讓表單寬一點 */
+    max-height: 85vh;       /* 避免過高 */
+    overflow-y: auto;       /* 內容過多時可滾動 */
+    text-align: left;       /* 表單內元素靠左對齊 */
+}
+
+#add-question-to-quiz-section.modal-content h3 {
+    text-align: center;     /* 標題置中 */
+    width: 100%;
+    margin-top: 0;          /* 移除預設的上邊距 */
+    margin-bottom: 20px;
+}
+
+
 .close-button {
     color: #AAAAAA;
     position: absolute;
@@ -237,7 +246,7 @@ button:hover {
 
 #multiple-choice-options {
     display: flex;
-    flex-direction: column; /* 垂直排列 */
+    flex-direction: column;
     gap: 10px;
     width: 100%;
     margin: 15px 0;
