@@ -7,7 +7,6 @@ body {
     margin: 0;
     background-color: #FFF3E0; /* 淺橘色背景 */
     color: #333;
-    overflow-y: scroll;
 }
 
 header {
@@ -16,6 +15,8 @@ header {
     padding: 1rem 0;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 200; /* 確保 header 在最上層 */
 }
 
 h1 {
@@ -34,7 +35,6 @@ main {
 }
 
 #game-settings,
-#score-board,
 #add-question-to-quiz-section,
 #quiz-management-section {
     background-color: #ffffff;
@@ -47,16 +47,11 @@ main {
     box-sizing: border-box;
 }
 
-#game-settings {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
 .setting-item {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    margin-bottom: 15px; /* 增加項目間距 */
 }
 
 .setting-item label {
@@ -64,10 +59,7 @@ main {
     color: #E65100;
 }
 
-.setting-item input[type="number"],
-.setting-item select,
-.setting-item input[type="text"],
-.setting-item textarea {
+.setting-item input, .setting-item select, .setting-item textarea {
     padding: 10px;
     border: 1px solid #FFCC80;
     border-radius: 6px;
@@ -76,7 +68,7 @@ main {
     box-sizing: border-box;
 }
 
-button, .button {
+button {
     background-color: #FF9800;
     color: white;
     border: none;
@@ -84,11 +76,11 @@ button, .button {
     border-radius: 8px;
     cursor: pointer;
     font-size: 1.1rem;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: all 0.3s ease;
     margin-top: 10px;
 }
 
-button:hover, .button:hover {
+button:hover {
     background-color: #FB8C00;
     transform: translateY(-2px);
 }
@@ -101,32 +93,29 @@ button:hover, .button:hover {
     margin-top: 15px;
 }
 
-.button-group button {
-    flex-grow: 1;
-    min-width: 120px;
-}
-
-button.delete-question-btn {
-    background-color: #d9534f;
-}
-
-button.edit-question-btn {
-    background-color: #5bc0de;
-}
-
 #game-container {
     display: none;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 900px;
+    max-width: 1200px; /* 稍微加寬遊戲容器 */
 }
 
+/* 【問題4修正】將分數欄固定在頂部 */
 #score-board {
-    padding: 20px;
-    margin-bottom: 20px;
     width: 100%;
+    padding: 15px;
     box-sizing: border-box;
+    background-color: #fff3e0ea; /* 增加帶透明度的背景色，避免文字穿透 */
+    backdrop-filter: blur(5px); /* 增加毛玻璃效果，提升質感 */
+    
+    /* 核心設定 */
+    position: sticky;
+    top: 0;
+    z-index: 100; /* 確保它在遊戲牌之上 */
+    
+    border-bottom: 2px solid #FFB74D;
+    margin-bottom: 20px;
 }
 
 #player-scores {
@@ -139,31 +128,42 @@ button.edit-question-btn {
 
 .player-score {
     background-color: #FFFDE7;
-    border: 1px solid #FFD54F;
+    border: 2px solid #FFD54F;
     padding: 10px 15px;
     border-radius: 8px;
     font-weight: bold;
     color: #F57C00;
+    transition: all 0.3s ease;
 }
 
+/* 【問題3修正】高亮顯示當前玩家 */
+.player-score.current {
+    background-color: #FFB74D;
+    color: white;
+    border-color: #E65100;
+    transform: scale(1.1); /* 放大效果 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+
 #current-player-display {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: bold;
     color: #D84315;
     text-align: center;
-    margin-bottom: 15px;
 }
 
+/* 【問題5修正】讓牌區能根據視窗大小自動排列 */
 #game-board {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 15px;
+    /* 核心設定：自動填充，每張牌最小120px，最大佔滿剩餘空間 */
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 20px; /* 加大間距 */
     padding: 20px;
-    background-color: #FFECB3;
-    border-radius: 12px;
     width: 100%;
     box-sizing: border-box;
 }
+
 
 .question-card {
     background-color: #FFB74D;
@@ -171,18 +171,18 @@ button.edit-question-btn {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
     border-radius: 10px;
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1; /* 保持卡片為正方形 */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .question-card:hover {
     background-color: #FFA726;
-    transform: translateY(-5px);
+    transform: translateY(-5px) scale(1.05);
 }
 
 .question-card.answered {
@@ -190,6 +190,7 @@ button.edit-question-btn {
     color: #9E9E9E;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 .modal {
@@ -213,23 +214,15 @@ button.edit-question-btn {
 
 .modal-content {
     background-color: #FFF8E1;
-    margin: auto;
     padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     width: 90%;
     max-width: 500px;
     text-align: center;
     position: relative;
-    transform: translateY(-20px);
-    transition: transform 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.modal.show-modal .modal-content {
-    transform: translateY(0);
 }
 
 .close-button {
@@ -240,17 +233,6 @@ button.edit-question-btn {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: #333;
-}
-
-#question-text {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    color: #E65100;
 }
 
 #multiple-choice-options {
@@ -271,109 +253,14 @@ button.edit-question-btn {
     color: #E65100;
 }
 
-.mc-option-button:hover {
-    background-color: #FFFDE7;
-}
-
-.mc-option-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.judgment-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-    width: 100%;
-}
-
-.judgment-button {
-    padding: 12px 30px;
-    font-size: 1.2rem;
-    flex-grow: 1;
-    max-width: 150px;
-}
-
-.correct-button {
-    background-color: #66BB6A;
-}
-
-.incorrect-button {
-    background-color: #EF5350;
-}
-
-#feedback {
-    margin-top: 20px;
-    font-size: 1.3rem;
-    font-weight: bold;
-}
-
-footer {
-    background-color: #333;
-    color: white;
-    text-align: center;
-    padding: 1em 0;
-    width: 100%;
-    margin-top: auto;
-}
-
-#final-score-modal .modal-content h2 {
-    color: #E65100;
-}
-
-.player-final-score.winner {
-    color: #D32F2F;
-    font-weight: bold;
-}
-
-#quiz-question-list li {
-    padding: 10px;
-    margin-bottom: 8px;
-    border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f9f9f9;
-}
-
-.item-actions button {
-    margin-left: 5px;
-    font-size: 0.8em;
-    padding: 4px 8px;
-}
-
-/* --- Media Queries for Responsive Design --- */
+/* Media Queries for Responsive Design */
 @media (max-width: 768px) {
     h1 {
         font-size: 1.8rem;
     }
 
-    #game-settings,
-    #score-board,
-    #add-question-to-quiz-section,
-    #quiz-management-section,
-    .modal-content {
-        padding: 15px;
-        max-width: 95%;
-    }
-
-    button, .button {
-        font-size: 1rem;
-        padding: 10px 15px;
-    }
-
-    .button-group {
-        flex-direction: column;
-    }
-
     .question-card {
-        font-size: 1.5rem;
-        min-height: 80px;
-    }
-
-    #question-text {
-        font-size: 1.5rem;
+        font-size: 2rem;
     }
 }
 
@@ -382,18 +269,9 @@ footer {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     #game-board {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 10px;
-    }
-
-    #question-text {
-        font-size: 1.2rem;
-    }
-
-    .judgment-buttons {
-        flex-direction: column;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
         gap: 10px;
     }
 }

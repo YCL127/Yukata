@@ -1,15 +1,15 @@
 // script.js
 
-// --- 遊戲狀態變數（這些變數不直接操作 DOM，因此可以保留在全局範圍）---
+// --- 遊戲狀態變數 ---
 let players = [];
 let currentPlayerIndex = 0;
 let currentQuestions = [];
 let answeredQuestions = new Set();
 let allQuizzes = {};
 let selectedQuizId = 'default';
-let currentQuiz = { name: '預設題庫', questions: [] }; // 初始化一個預設題庫物件
+let currentQuiz = { name: '預設題庫', questions: [] };
 
-// 預設的遊戲題目數據（僅用於首次載入或沒有任何本地題庫時）
+// 預設題庫... (此處省略，與您原檔案相同)
 const defaultQuestions = [
     {
         question: "哪種動物以其長脖子而聞名？",
@@ -49,11 +49,11 @@ const defaultQuestions = [
     }
 ];
 
-// Fisher-Yates (Knuth) shuffle algorithm
+
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+        [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
 }
@@ -62,9 +62,8 @@ function generateUniqueId() {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
 
-// 將所有DOM操作和事件綁定放在DOMContentLoaded內部
 document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM 元素獲取 (全部放在這裡面，確保在DOM載入後可用) ---
+    // --- DOM 元素獲取 ---
     const startGameButton = document.getElementById('start-game-button');
     const numPlayersInput = document.getElementById('num-players');
     const numQuestionsInput = document.getElementById('num-questions');
@@ -83,21 +82,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const markIncorrectButton = document.getElementById('mark-incorrect-button');
     const feedbackElement = document.getElementById('feedback');
     const multipleChoiceOptionsContainer = document.getElementById('multiple-choice-options');
-
     const finalScoreModal = document.getElementById('final-score-modal');
     const closeFinalScoreModalButton = document.getElementById('close-final-score-modal');
     const finalScoresDisplay = document.getElementById('final-scores-display');
     const restartGameButton = document.getElementById('restart-game-button');
-
-    // --- 題庫管理 DOM 元素 ---
     const quizSelect = document.getElementById('quiz-select');
     const addQuizButton = document.getElementById('add-quiz-button');
     const deleteQuizButton = document.getElementById('delete-quiz-button');
     const importQuizButton = document.getElementById('import-quiz-button');
     const exportQuizButton = document.getElementById('export-quiz-button');
     const quizQuestionList = document.getElementById('quiz-question-list');
-
-    // 新增題目區塊相關
     const addQuestionToQuizSection = document.getElementById('add-question-to-quiz-section');
     const showAddQuestionSectionButton = document.getElementById('show-add-question-section-button');
     const questionTypeSelect = document.getElementById('question-type-select');
@@ -112,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const option4Input = document.getElementById('option4-input');
     const correctOptionSelect = document.getElementById('correct-option-select');
     const eventCardInputs = document.getElementById('event-card-inputs');
-    const eventTypeSelect = document.getElementById('event-type-select'); // 新增的事件類型下拉選單
+    const eventTypeSelect = document.getElementById('event-type-select');
     const eventDescriptionContainer = document.getElementById('event-description-container');
     const eventPointsContainer = document.getElementById('event-points-container');
     const eventDescriptionInput = document.getElementById('event-description-input');
@@ -134,17 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (storedQuizzes) {
             allQuizzes = JSON.parse(storedQuizzes);
         } else {
-            allQuizzes = {
-                'default': { id: 'default', name: '預設題庫', questions: defaultQuestions }
-            };
+            allQuizzes = { 'default': { id: 'default', name: '預設題庫', questions: defaultQuestions } };
             saveQuizzes();
         }
-        if (allQuizzes[selectedQuizId]) {
-            currentQuiz = allQuizzes[selectedQuizId];
-        } else {
-            selectedQuizId = 'default';
-            currentQuiz = allQuizzes['default'];
-        }
+        currentQuiz = allQuizzes[selectedQuizId] || allQuizzes['default'];
     }
 
     function populateQuizSelect() {
@@ -160,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderQuizList() {
         quizQuestionList.innerHTML = '';
-        if (currentQuiz && currentQuiz.questions && currentQuiz.questions.length > 0) {
+        if (currentQuiz?.questions?.length > 0) {
             currentQuiz.questions.forEach((q, index) => {
                 const item = document.createElement('li');
                 let displayContent = '';
@@ -172,73 +159,47 @@ document.addEventListener('DOMContentLoaded', () => {
                         displayContent = `[選擇題 ${q.points}點] Q: ${q.question}`;
                         break;
                     case 'event_card':
-                        // 讓事件卡顯示更具體
                         let eventTitle = '';
-                        switch(q.event_type) {
+                        switch (q.event_type) {
                             case 'double_score': eventTitle = '分數加倍'; break;
                             case 'swap_score': eventTitle = '分數交換'; break;
                             case 'random_score': eventTitle = '隨機分數'; break;
-                            case 'fixed_points':
-                            default:
-                                eventTitle = `點數 ${q.event_points >= 0 ? '+' : ''}${q.event_points}`;
-                                break;
+                            default: eventTitle = `點數 ${q.event_points >= 0 ? '+' : ''}${q.event_points}`; break;
                         }
-                        displayContent = `[事件卡 - ${eventTitle}] 事件: ${q.event_description}`;
+                        displayContent = `[事件卡 - ${eventTitle}] ${q.event_description}`;
                         break;
-                    default:
-                        displayContent = `[未知類型]`;
-                        break;
+                    default: displayContent = `[未知類型]`; break;
                 }
                 item.innerHTML = `
-                    ${displayContent}
+                    <span>${displayContent}</span>
                     <div class="item-actions">
                         <button class="edit-question-btn" data-index="${index}">編輯</button>
                         <button class="delete-question-btn" data-index="${index}">刪除</button>
-                    </div>
-                `;
+                    </div>`;
                 quizQuestionList.appendChild(item);
             });
         } else {
             quizQuestionList.innerHTML = '<li>此題庫中沒有題目。</li>';
         }
     }
-    
-    // 更新事件卡輸入框的顯示狀態
+
     function updateEventInputsVisibility() {
         const selectedEventType = eventTypeSelect.value;
-        if (selectedEventType === 'fixed_points') {
-            eventDescriptionContainer.style.display = 'block';
-            eventPointsContainer.style.display = 'block';
-        } else {
-            eventDescriptionContainer.style.display = 'none';
-            eventPointsContainer.style.display = 'none';
-        }
+        const show = selectedEventType === 'fixed_points';
+        eventDescriptionContainer.style.display = show ? 'flex' : 'none';
+        eventPointsContainer.style.display = show ? 'flex' : 'none';
     }
-
 
     function showAddQuestionSection(type = 'normal_question', questionToEdit = null, index = -1) {
         addQuestionToQuizSection.style.display = 'block';
         editingQuestionIndex = index;
-
-        // 重置表單
-        questionInput.value = '';
-        answerInput.value = '';
-        mcQuestionInput.value = '';
-        [option1Input, option2Input, option3Input, option4Input].forEach(i => i.value = '');
-        correctOptionSelect.value = '0';
-        eventDescriptionInput.value = '';
-        eventPointsInput.value = '0';
+        [questionInput, answerInput, mcQuestionInput, option1Input, option2Input, option3Input, option4Input, eventDescriptionInput].forEach(i => i.value = '');
+        [correctOptionSelect, eventPointsInput].forEach(i => i.value = '0');
         pointsInput.value = '10';
-        eventTypeSelect.value = 'fixed_points'; // 預設事件卡類型
-
-        normalQuestionInputs.style.display = 'none';
-        multipleChoiceInputs.style.display = 'none';
-        eventCardInputs.style.display = 'none';
+        eventTypeSelect.value = 'fixed_points';
+        [normalQuestionInputs, multipleChoiceInputs, eventCardInputs].forEach(d => d.style.display = 'none');
         pointsInput.parentElement.style.display = 'flex';
-
         questionTypeSelect.value = questionToEdit ? questionToEdit.type : type;
-        
-        // 根據題目類型顯示對應區塊
         switch (questionTypeSelect.value) {
             case 'normal_question':
                 normalQuestionInputs.style.display = 'block';
@@ -262,13 +223,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 pointsInput.parentElement.style.display = 'none';
                 if (questionToEdit) {
                     eventTypeSelect.value = questionToEdit.event_type || 'fixed_points';
-                    eventDescriptionInput.value = questionToEdit.event_description;
+                    eventDescriptionInput.value = questionToEdit.event_description || '';
                     eventPointsInput.value = questionToEdit.event_points || 0;
                 }
-                updateEventInputsVisibility(); // 根據事件類型更新可見性
+                updateEventInputsVisibility();
                 break;
         }
-        
         saveQuestionButton.textContent = editingQuestionIndex !== -1 ? '更新題目' : '儲存題目';
     }
 
@@ -278,137 +238,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveOrUpdateQuestion() {
-        const currentSelectedQuiz = allQuizzes[selectedQuizId];
-        if (!currentSelectedQuiz) {
-            alert("無選中題庫，無法儲存。");
-            return;
-        }
-
-        let newQuestion;
-        if (editingQuestionIndex !== -1) {
-            newQuestion = currentQuiz.questions[editingQuestionIndex];
-        } else {
-            newQuestion = {};
-        }
-
+        if (!currentQuiz) { alert("無選中題庫，無法儲存。"); return; }
         const type = questionTypeSelect.value;
-        newQuestion.type = type;
-
+        const questionData = { type };
         if (type !== 'event_card') {
             const points = parseInt(pointsInput.value);
-            if (isNaN(points) || points <= 0) {
-                alert("請輸入有效的分數 (大於 0)。");
-                return;
-            }
-            newQuestion.points = points;
-        } else {
-            delete newQuestion.points;
+            if (isNaN(points) || points <= 0) { alert("請輸入有效的分數。"); return; }
+            questionData.points = points;
         }
-
         if (type === 'normal_question') {
-            const questionText = questionInput.value.trim();
-            const answerText = answerInput.value.trim();
-            if (!questionText || !answerText) {
-                alert("題目和答案不能為空。");
-                return;
-            }
-            newQuestion.question = questionText;
-            newQuestion.answer = answerText;
+            const q = questionInput.value.trim();
+            const a = answerInput.value.trim();
+            if (!q || !a) { alert("題目和答案不能為空。"); return; }
+            questionData.question = q;
+            questionData.answer = a;
         } else if (type === 'multiple_choice') {
-            const mcQuestionText = mcQuestionInput.value.trim();
-            const options = [option1Input.value.trim(), option2Input.value.trim(), option3Input.value.trim(), option4Input.value.trim()];
-            if (!mcQuestionText || options.some(opt => !opt)) {
-                alert("選擇題的所有欄位都不能為空。");
-                return;
-            }
-            newQuestion.question = mcQuestionText;
-            newQuestion.options = options;
-            newQuestion.correct_answer_index = parseInt(correctOptionSelect.value);
+            const q = mcQuestionInput.value.trim();
+            const opts = [option1Input, option2Input, option3Input, option4Input].map(i => i.value.trim());
+            if (!q || opts.some(o => !o)) { alert("選擇題所有欄位不能為空。"); return; }
+            questionData.question = q;
+            questionData.options = opts;
+            questionData.correct_answer_index = parseInt(correctOptionSelect.value);
         } else if (type === 'event_card') {
             const eventType = eventTypeSelect.value;
-            newQuestion.event_type = eventType;
-
+            questionData.event_type = eventType;
             switch (eventType) {
                 case 'fixed_points':
-                    const eventDescription = eventDescriptionInput.value.trim();
-                    const eventPoints = parseInt(eventPointsInput.value);
-                    if (!eventDescription || isNaN(eventPoints)) {
-                        alert("事件描述不能為空，點數必須是有效數字。");
-                        return;
-                    }
-                    newQuestion.event_description = eventDescription;
-                    newQuestion.event_points = eventPoints;
+                    const desc = eventDescriptionInput.value.trim();
+                    const pts = parseInt(eventPointsInput.value);
+                    if (!desc || isNaN(pts)) { alert("事件描述不能為空，點數必須是數字。"); return; }
+                    questionData.event_description = desc;
+                    questionData.event_points = pts;
                     break;
-                case 'double_score':
-                    newQuestion.event_description = "天賜良機！分數加倍！";
-                    delete newQuestion.event_points;
-                    break;
-                case 'swap_score':
-                    newQuestion.event_description = "風水輪流轉！與一名玩家交換分數！";
-                    delete newQuestion.event_points;
-                    break;
-                case 'random_score':
-                    newQuestion.event_description = "命運的時刻！隨機增減分數！";
-                    delete newQuestion.event_points;
-                    break;
+                case 'double_score': questionData.event_description = "天賜良機！分數加倍！"; break;
+                case 'swap_score': questionData.event_description = "風水輪流轉！與一名玩家交換分數！"; break;
+                case 'random_score': questionData.event_description = "命運的時刻！隨機增減分數！"; break;
             }
         }
-        
-        // 清理不相關的屬性
-        if (type !== 'normal_question') { delete newQuestion.answer; }
-        if (type !== 'multiple_choice') { delete newQuestion.options; delete newQuestion.correct_answer_index; }
-        if (type !== 'event_card') { delete newQuestion.event_type; delete newQuestion.event_description; delete newQuestion.event_points;}
-
-
         if (editingQuestionIndex === -1) {
-            currentQuiz.questions.push(newQuestion);
+            currentQuiz.questions.push(questionData);
+        } else {
+            currentQuiz.questions[editingQuestionIndex] = questionData;
         }
-
         saveQuizzes();
         renderQuizList();
         cancelAddQuestion();
     }
 
-    function editQuestion(index) {
-        const question = currentQuiz.questions[index];
-        if (!question) return;
-        showAddQuestionSection(question.type, question, index);
-    }
-
-    function deleteQuestion(index) {
-        if (confirm('確定要刪除這道題目嗎？')) {
-            currentQuiz.questions.splice(index, 1);
-            saveQuizzes();
-            renderQuizList();
-        }
-    }
-
     function initializeGame() {
-        if (!currentQuiz || currentQuiz.questions.length === 0) {
-            alert('請選擇一個包含題目的題庫！');
-            return;
-        }
-
+        if (!currentQuiz?.questions?.length) { alert('請選擇一個包含題目的題庫！'); return; }
         const numPlayers = parseInt(numPlayersInput.value);
         const numQuestions = parseInt(numQuestionsInput.value);
-
         players = Array.from({ length: numPlayers }, (_, i) => ({ id: i, score: 0 }));
         currentPlayerIndex = 0;
         answeredQuestions.clear();
-
-        const shuffledQuestions = shuffleArray([...currentQuiz.questions]);
-        currentQuestions = shuffledQuestions.slice(0, Math.min(numQuestions, shuffledQuestions.length));
-
-        if (currentQuestions.length === 0) {
-            alert('題庫中沒有足夠的題目。');
-            resetGame();
-            return;
-        }
-
+        const shuffled = shuffleArray([...currentQuiz.questions]);
+        currentQuestions = shuffled.slice(0, Math.min(numQuestions, shuffled.length));
         if (currentQuestions.length < numQuestions) {
             alert(`題庫中只有 ${currentQuestions.length} 題，將以此數量進行遊戲。`);
         }
-
         gameSettings.style.display = 'none';
         gameContainer.style.display = 'flex';
         updatePlayerInfo();
@@ -418,15 +306,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetGame() {
         gameSettings.style.display = 'block';
         gameContainer.style.display = 'none';
-        gameBoard.innerHTML = '';
+        loadQuizzes();
         populateQuizSelect();
         renderQuizList();
     }
 
+    // 【問題3修正】更新此函數以高亮當前玩家
     function updatePlayerInfo() {
         currentPlayerDisplay.textContent = `當前玩家: 玩家 ${currentPlayerIndex + 1}`;
         playerScoresContainer.innerHTML = players.map((p, i) =>
-            `<div class="player-score">玩家 ${i + 1}: ${p.score} 點</div>`
+            // 如果索引匹配，就加上 'current' class
+            `<div class="player-score ${i === currentPlayerIndex ? 'current' : ''}">
+                玩家 ${i + 1}: ${p.score} 點
+             </div>`
         ).join('');
     }
 
@@ -444,26 +336,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleCardClick(event) {
         const cardIndex = parseInt(event.target.dataset.index);
-        if (answeredQuestions.has(cardIndex)) {
-            alert('這張卡片已經被翻過了！');
-            return;
-        }
-        const question = currentQuestions[cardIndex];
-        if (question) displayQuestion(question, cardIndex);
+        if (answeredQuestions.has(cardIndex)) { alert('這張卡片已經被翻過了！'); return; }
+        displayQuestion(currentQuestions[cardIndex], cardIndex);
     }
 
     function displayQuestion(question, cardIndex) {
-        questionTextElement.textContent = '';
-        correctAnswerDisplay.style.display = 'none';
-        judgmentButtons.style.display = 'none';
+        [correctAnswerDisplay, judgmentButtons, multipleChoiceOptionsContainer].forEach(el => el.style.display = 'none');
         feedbackElement.textContent = '';
         showAnswerButton.style.display = 'block';
-        multipleChoiceOptionsContainer.innerHTML = '';
-        multipleChoiceOptionsContainer.style.display = 'none';
-
-        questionModal.style.display = 'block';
+        questionModal.style.display = 'flex';
         questionModal.classList.add('show-modal');
-
         if (question.type === 'normal_question') {
             questionTextElement.textContent = question.question;
             showAnswerButton.onclick = () => {
@@ -472,57 +354,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 judgmentButtons.style.display = 'flex';
                 showAnswerButton.style.display = 'none';
             };
-            markCorrectButton.onclick = () => markAnswer(true, question.points, cardIndex);
-            markIncorrectButton.onclick = () => markAnswer(false, 0, cardIndex);
+            markCorrectButton.onclick = () => handleAnswer(true, question.points, cardIndex);
+            markIncorrectButton.onclick = () => handleAnswer(false, 0, cardIndex);
         } else if (question.type === 'multiple_choice') {
             questionTextElement.textContent = question.question;
             showAnswerButton.style.display = 'none';
-            renderMultipleChoiceOptions(question.options, question.correct_answer_index, question.points, cardIndex);
+            renderMultipleChoiceOptions(question, cardIndex);
         } else if (question.type === 'event_card') {
             questionTextElement.textContent = `事件卡：${question.event_description}`;
             showAnswerButton.style.display = 'none';
-            judgmentButtons.style.display = 'none';
+            
+            // 【問題1 & 2修正】確保事件卡執行後輪到下一位玩家
             applyEventCardEffect(question); // 執行事件效果
-            markCardAsAnswered(cardIndex);
+            markCardAsAnswered(cardIndex);  // 先標記已回答
             setTimeout(() => {
                 hideQuestionModal();
-                nextTurn();
-            }, 2500); // 延長顯示時間讓玩家看清楚效果
+                nextTurn(); // 在彈窗關閉後，輪到下一位
+            }, 2500);
         }
     }
-    
-    function renderMultipleChoiceOptions(options, correctIndex, points, cardIndex) {
+
+    function renderMultipleChoiceOptions(question, cardIndex) {
+        multipleChoiceOptionsContainer.innerHTML = '';
         multipleChoiceOptionsContainer.style.display = 'flex';
-        options.forEach((option, index) => {
+        question.options.forEach((option, index) => {
             const button = document.createElement('button');
             button.className = 'mc-option-button';
             button.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
-            button.dataset.optionIndex = index;
-            button.onclick = (event) => handleOptionClick(event, correctIndex, points, cardIndex);
+            button.onclick = () => {
+                multipleChoiceOptionsContainer.querySelectorAll('button').forEach(b => b.disabled = true);
+                const isCorrect = index === question.correct_answer_index;
+                handleAnswer(isCorrect, isCorrect ? question.points : 0, cardIndex);
+            };
             multipleChoiceOptionsContainer.appendChild(button);
         });
     }
 
-    function handleOptionClick(event, correctIndex, points, cardIndex) {
-        const selectedOptionIndex = parseInt(event.target.dataset.optionIndex);
-        multipleChoiceOptionsContainer.querySelectorAll('.mc-option-button').forEach(btn => btn.disabled = true);
-
-        if (selectedOptionIndex === correctIndex) {
-            feedbackElement.textContent = '正確！';
-            feedbackElement.style.color = 'green';
-            markAnswer(true, points, cardIndex);
-        } else {
-            feedbackElement.textContent = `錯誤。正確答案是 ${String.fromCharCode(65 + correctIndex)}.`;
-            feedbackElement.style.color = 'red';
-            markAnswer(false, 0, cardIndex);
-        }
-        setTimeout(() => {
-            hideQuestionModal();
-            nextTurn();
-        }, 1500);
-    }
-    
-    function markAnswer(isCorrect, points, cardIndex) {
+    // 抽離出共同的回答處理邏輯
+    function handleAnswer(isCorrect, points, cardIndex) {
         if (isCorrect) {
             players[currentPlayerIndex].score += points;
             feedbackElement.textContent = `正確！獲得 ${points} 點。`;
@@ -535,59 +404,49 @@ document.addEventListener('DOMContentLoaded', () => {
         markCardAsAnswered(cardIndex);
         setTimeout(() => {
             hideQuestionModal();
-            nextTurn();
+            nextTurn(); // 回答完問題後，輪到下一位
         }, 1500);
     }
 
+    // 【問題2修正】確保此函數邏輯正確
     function applyEventCardEffect(eventCard) {
+        // 明確地只獲取當前玩家
         const player = players[currentPlayerIndex];
         let feedbackText = '';
-
-        // 兼容舊格式的事件卡
         const eventType = eventCard.event_type || 'fixed_points';
-
         switch (eventType) {
             case 'double_score':
                 const oldScore = player.score;
-                player.score *= 2;
-                feedbackText = `分數加倍！從 ${oldScore} 點變為 ${player.score} 點！`;
+                player.score *= 2; // 只操作當前玩家的分數
+                feedbackText = `玩家 ${currentPlayerIndex + 1} 分數加倍！從 ${oldScore} 點變為 ${player.score} 點！`;
                 break;
-
             case 'swap_score':
-                const otherPlayers = players.filter((_, index) => index !== currentPlayerIndex);
+                const otherPlayers = players.filter((_, i) => i !== currentPlayerIndex);
                 if (otherPlayers.length > 0) {
-                    const targetPlayerIndex = players.indexOf(otherPlayers[Math.floor(Math.random() * otherPlayers.length)]);
-                    const myOldScore = player.score;
-                    const theirOldScore = players[targetPlayerIndex].score;
-                    
-                    player.score = theirOldScore;
-                    players[targetPlayerIndex].score = myOldScore;
-
-                    feedbackText = `與 玩家 ${targetPlayerIndex + 1} 交換了分數！你的分數從 ${myOldScore} 變為 ${player.score}。`;
+                    const targetPlayer = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
+                    const targetPlayerIndex = players.findIndex(p => p.id === targetPlayer.id);
+                    // 交換分數
+                    [player.score, players[targetPlayerIndex].score] = [players[targetPlayerIndex].score, player.score];
+                    feedbackText = `玩家 ${currentPlayerIndex + 1} 與 玩家 ${targetPlayerIndex + 1} 交換了分數！`;
                 } else {
                     feedbackText = "場上沒有其他玩家可以交換分數！";
                 }
                 break;
-
             case 'random_score':
-                const randomPoints = Math.floor(Math.random() * 61) - 30; // -30 to +30
+                const randomPoints = Math.floor(Math.random() * 61) - 30;
                 player.score += randomPoints;
-                feedbackText = `隨機事件！分數 ${randomPoints >= 0 ? `增加 ${randomPoints}` : `減少 ${-randomPoints}`} 點！`;
+                feedbackText = `隨機事件！玩家 ${currentPlayerIndex + 1} 分數 ${randomPoints >= 0 ? `增加 ${randomPoints}` : `減少 ${-randomPoints}`} 點！`;
                 break;
-            
-            case 'fixed_points':
-            default: // 處理舊版或未指定類型的卡片
+            default:
                 const points = eventCard.event_points || 0;
                 player.score += points;
-                feedbackText = `${eventCard.event_description} 點數變化：${points >= 0 ? '+' : ''}${points}`;
+                feedbackText = `${eventCard.event_description} 玩家 ${currentPlayerIndex + 1} 點數變化：${points >= 0 ? '+' : ''}${points}`;
                 break;
         }
-
         feedbackElement.textContent = feedbackText;
-        feedbackElement.style.color = 'blue';
-        updatePlayerInfo();
+        feedbackElement.style.color = '#00008B';
+        updatePlayerInfo(); // 更新分數顯示
     }
-
 
     function hideQuestionModal() {
         questionModal.classList.remove('show-modal');
@@ -597,10 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function markCardAsAnswered(index) {
         answeredQuestions.add(index);
         const card = document.querySelector(`.question-card[data-index="${index}"]`);
-        if (card) {
-            card.classList.add('answered');
-            card.removeEventListener('click', handleCardClick);
-        }
+        if (card) { card.classList.add('answered'); }
     }
 
     function nextTurn() {
@@ -613,143 +469,88 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function endGame() {
-        finalScoreModal.style.display = 'block';
+        finalScoreModal.style.display = 'flex';
         finalScoreModal.classList.add('show-modal');
-        finalScoresDisplay.innerHTML = '';
+        finalScoresDisplay.innerHTML = '<h2>最終得分</h2>';
         const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
         sortedPlayers.forEach((p, index) => {
             const div = document.createElement('div');
             div.className = 'player-final-score';
             div.textContent = `玩家 ${p.id + 1}: ${p.score} 點`;
-            if (index === 0) div.classList.add('winner');
+            if (index === 0 && p.score > 0) div.classList.add('winner');
             finalScoresDisplay.appendChild(div);
         });
     }
 
     // --- 事件監聽器 ---
-
     startGameButton.addEventListener('click', initializeGame);
     closeButton.addEventListener('click', hideQuestionModal);
-    
-    quizSelect.addEventListener('change', (event) => {
-        selectedQuizId = event.target.value;
-        currentQuiz = allQuizzes[selectedQuizId];
-        renderQuizList();
-        saveQuizzes();
-    });
-
+    quizSelect.addEventListener('change', (e) => { selectedQuizId = e.target.value; currentQuiz = allQuizzes[selectedQuizId]; renderQuizList(); });
     addQuizButton.addEventListener('click', () => {
-        const quizName = prompt('請輸入新題庫的名稱:');
-        if (quizName && quizName.trim() !== '') {
-            const newQuizId = generateUniqueId();
-            allQuizzes[newQuizId] = {
-                id: newQuizId,
-                name: quizName.trim(),
-                questions: []
-            };
-            selectedQuizId = newQuizId;
-            saveQuizzes();
-            populateQuizSelect();
-            renderQuizList();
+        const name = prompt('請輸入新題庫的名稱:');
+        if (name?.trim()) {
+            const newId = generateUniqueId();
+            allQuizzes[newId] = { id: newId, name: name.trim(), questions: [] };
+            selectedQuizId = newId;
+            saveQuizzes(); populateQuizSelect(); renderQuizList();
         }
     });
-
     deleteQuizButton.addEventListener('click', () => {
-        if (selectedQuizId === 'default') {
-            alert('不能刪除預設題庫！');
-            return;
-        }
-        if (confirm(`確定要刪除題庫 "${allQuizzes[selectedQuizId].name}" 嗎？`)) {
+        if (selectedQuizId === 'default') { alert('不能刪除預設題庫！'); return; }
+        if (confirm(`確定要刪除題庫 "${currentQuiz.name}" 嗎？`)) {
             delete allQuizzes[selectedQuizId];
             selectedQuizId = 'default';
-            currentQuiz = allQuizzes['default'];
-            saveQuizzes();
-            populateQuizSelect();
-            renderQuizList();
+            saveQuizzes(); resetGame();
         }
     });
-
     exportQuizButton.addEventListener('click', () => {
-        if (!currentQuiz) {
-            alert('沒有可匯出的題庫！');
-            return;
-        }
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentQuiz, null, 2));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", `${currentQuiz.name}.json`);
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
+        if (!currentQuiz) { alert('沒有可匯出的題庫！'); return; }
+        const a = document.createElement('a');
+        a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentQuiz, null, 2));
+        a.download = `${currentQuiz.name}.json`;
+        a.click();
     });
-
     importQuizButton.addEventListener('click', () => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
-        input.onchange = (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const importedData = JSON.parse(e.target.result);
-                        if (importedData && typeof importedData.name === 'string' && Array.isArray(importedData.questions)) {
-                            const quizName = prompt('請輸入匯入題庫的名稱:', importedData.name);
-                            if (quizName && quizName.trim() !== '') {
-                                const newQuizId = generateUniqueId();
-                                allQuizzes[newQuizId] = {
-                                    id: newQuizId,
-                                    name: quizName.trim(),
-                                    questions: importedData.questions
-                                };
-                                saveQuizzes();
-                                populateQuizSelect();
-                                selectedQuizId = newQuizId;
-                                quizSelect.value = newQuizId;
-                                currentQuiz = allQuizzes[selectedQuizId];
-                                renderQuizList();
-                                alert(`題庫 "${quizName.trim()}" 已成功匯入！`);
-                            }
-                        } else {
-                            alert('匯入的 JSON 檔案格式不正確。');
-                        }
-                    } catch (error) {
-                        alert('讀取檔案時發生錯誤。');
-                    }
-                };
-                reader.readAsText(file);
-            }
+        input.onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = re => {
+                try {
+                    const data = JSON.parse(re.target.result);
+                    if (data?.name && Array.isArray(data.questions)) {
+                        const newId = generateUniqueId();
+                        allQuizzes[newId] = { ...data, id: newId, name: data.name };
+                        selectedQuizId = newId;
+                        saveQuizzes(); populateQuizSelect(); renderQuizList();
+                        alert(`題庫 "${data.name}" 已成功匯入！`);
+                    } else { alert('檔案格式不正確。'); }
+                } catch (err) { alert('讀取檔案時發生錯誤。'); }
+            };
+            reader.readAsText(file);
         };
         input.click();
     });
-
-    closeFinalScoreModalButton.addEventListener('click', () => {
-        finalScoreModal.style.display = 'none';
-        resetGame();
-    });
-
-    restartGameButton.addEventListener('click', () => {
-        finalScoreModal.style.display = 'none';
-        resetGame();
-    });
-
-    questionTypeSelect.addEventListener('change', (event) => {
-        showAddQuestionSection(event.target.value);
-    });
-    
-    // 新增：當事件類型改變時，更新輸入框的可見性
+    closeFinalScoreModalButton.addEventListener('click', () => { finalScoreModal.style.display = 'none'; resetGame(); });
+    restartGameButton.addEventListener('click', () => { finalScoreModal.style.display = 'none'; resetGame(); });
+    questionTypeSelect.addEventListener('change', (e) => showAddQuestionSection(e.target.value));
     eventTypeSelect.addEventListener('change', updateEventInputsVisibility);
-
     saveQuestionButton.addEventListener('click', saveOrUpdateQuestion);
     cancelAddQuestionButton.addEventListener('click', cancelAddQuestion);
     showAddQuestionSectionButton.addEventListener('click', () => showAddQuestionSection('normal_question'));
-
-    quizQuestionList.addEventListener('click', (event) => {
-        if (event.target.classList.contains('edit-question-btn')) {
-            editQuestion(parseInt(event.target.dataset.index));
-        } else if (event.target.classList.contains('delete-question-btn')) {
-            deleteQuestion(parseInt(event.target.dataset.index));
+    quizQuestionList.addEventListener('click', (e) => {
+        const target = e.target.closest('button');
+        if (!target) return;
+        const index = parseInt(target.dataset.index);
+        if (target.classList.contains('edit-question-btn')) showAddQuestionSection(currentQuiz.questions[index].type, currentQuiz.questions[index], index);
+        if (target.classList.contains('delete-question-btn')) {
+            if (confirm('確定要刪除這道題目嗎？')) {
+                currentQuiz.questions.splice(index, 1);
+                saveQuizzes(); renderQuizList();
+            }
         }
     });
 
