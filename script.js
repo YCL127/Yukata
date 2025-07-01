@@ -311,11 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderQuizList();
     }
 
-    // 【問題3修正】更新此函數以高亮當前玩家
     function updatePlayerInfo() {
         currentPlayerDisplay.textContent = `當前玩家: 玩家 ${currentPlayerIndex + 1}`;
         playerScoresContainer.innerHTML = players.map((p, i) =>
-            // 如果索引匹配，就加上 'current' class
             `<div class="player-score ${i === currentPlayerIndex ? 'current' : ''}">
                 玩家 ${i + 1}: ${p.score} 點
              </div>`
@@ -342,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayQuestion(question, cardIndex) {
         [correctAnswerDisplay, judgmentButtons, multipleChoiceOptionsContainer].forEach(el => el.style.display = 'none');
-        feedbackElement.textContent = '';
+        feedbackElement.innerHTML = ''; // 改用 innerHTML, 清空內容
         showAnswerButton.style.display = 'block';
         questionModal.style.display = 'flex';
         questionModal.classList.add('show-modal');
@@ -363,17 +361,16 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (question.type === 'event_card') {
             questionTextElement.textContent = `事件卡：${question.event_description}`;
             showAnswerButton.style.display = 'none';
-            
-            // 【問題1 & 2修正】確保事件卡執行後輪到下一位玩家
-            applyEventCardEffect(question); // 執行事件效果
-            markCardAsAnswered(cardIndex);  // 先標記已回答
+            applyEventCardEffect(question);
+            markCardAsAnswered(cardIndex);
             setTimeout(() => {
                 hideQuestionModal();
-                nextTurn(); // 在彈窗關閉後，輪到下一位
+                nextTurn();
             }, 2500);
         }
     }
 
+    // 【修改】將 question 物件傳給 handleAnswer
     function renderMultipleChoiceOptions(question, cardIndex) {
         multipleChoiceOptionsContainer.innerHTML = '';
         multipleChoiceOptionsContainer.style.display = 'flex';
@@ -384,40 +381,48 @@ document.addEventListener('DOMContentLoaded', () => {
             button.onclick = () => {
                 multipleChoiceOptionsContainer.querySelectorAll('button').forEach(b => b.disabled = true);
                 const isCorrect = index === question.correct_answer_index;
-                handleAnswer(isCorrect, isCorrect ? question.points : 0, cardIndex);
+                // 將 question 物件傳過去
+                handleAnswer(isCorrect, isCorrect ? question.points : 0, cardIndex, question);
             };
             multipleChoiceOptionsContainer.appendChild(button);
         });
     }
 
-    // 抽離出共同的回答處理邏輯
-    function handleAnswer(isCorrect, points, cardIndex) {
+    // 【修改】更新此函數以顯示正確答案和鼓勵
+    function handleAnswer(isCorrect, points, cardIndex, question = null) {
         if (isCorrect) {
             players[currentPlayerIndex].score += points;
-            feedbackElement.textContent = `正確！獲得 ${points} 點。`;
-            feedbackElement.style.color = 'green';
+            feedbackElement.innerHTML = `<span style="color: green; font-weight: bold;">正確！獲得 ${points} 點。</span>`;
         } else {
-            feedbackElement.textContent = '錯誤。';
-            feedbackElement.style.color = 'red';
+            // 檢查是否為選擇題答錯
+            if (question && question.type === 'multiple_choice') {
+                const correctOptionLetter = String.fromCharCode(65 + question.correct_answer_index);
+                const correctOptionText = question.options[question.correct_answer_index];
+                feedbackElement.innerHTML = `
+                    <div style="color: red; font-weight: bold; margin-bottom: 8px;">答錯了，再接再厲！</div>
+                    <div>正確答案是： <strong>${correctOptionLetter}. ${correctOptionText}</strong></div>
+                `;
+            } else {
+                // 如果是標準問答題答錯
+                feedbackElement.innerHTML = '<span style="color: red; font-weight: bold;">錯誤。</span>';
+            }
         }
         updatePlayerInfo();
         markCardAsAnswered(cardIndex);
         setTimeout(() => {
             hideQuestionModal();
-            nextTurn(); // 回答完問題後，輪到下一位
-        }, 1500);
+            nextTurn();
+        }, 2000); // 延長顯示時間讓玩家看清楚答案
     }
-
-    // 【問題2修正】確保此函數邏輯正確
+    
     function applyEventCardEffect(eventCard) {
-        // 明確地只獲取當前玩家
         const player = players[currentPlayerIndex];
         let feedbackText = '';
         const eventType = eventCard.event_type || 'fixed_points';
         switch (eventType) {
             case 'double_score':
                 const oldScore = player.score;
-                player.score *= 2; // 只操作當前玩家的分數
+                player.score *= 2;
                 feedbackText = `玩家 ${currentPlayerIndex + 1} 分數加倍！從 ${oldScore} 點變為 ${player.score} 點！`;
                 break;
             case 'swap_score':
@@ -425,7 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (otherPlayers.length > 0) {
                     const targetPlayer = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
                     const targetPlayerIndex = players.findIndex(p => p.id === targetPlayer.id);
-                    // 交換分數
                     [player.score, players[targetPlayerIndex].score] = [players[targetPlayerIndex].score, player.score];
                     feedbackText = `玩家 ${currentPlayerIndex + 1} 與 玩家 ${targetPlayerIndex + 1} 交換了分數！`;
                 } else {
@@ -443,9 +447,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedbackText = `${eventCard.event_description} 玩家 ${currentPlayerIndex + 1} 點數變化：${points >= 0 ? '+' : ''}${points}`;
                 break;
         }
-        feedbackElement.textContent = feedbackText;
-        feedbackElement.style.color = '#00008B';
-        updatePlayerInfo(); // 更新分數顯示
+        feedbackElement.innerHTML = `<span style="color: #00008B; font-weight: bold;">${feedbackText}</span>`;
+        updatePlayerInfo();
     }
 
     function hideQuestionModal() {
@@ -458,6 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.querySelector(`.question-card[data-index="${index}"]`);
         if (card) { card.classList.add('answered'); }
     }
+
 
     function nextTurn() {
         if (answeredQuestions.size === currentQuestions.length) {
