@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yukata</title>
+    <title>OOGON</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <h1>分組答題遊戲_Yukata</h1>
+        <h1>OOGON - 分組答題遊戲</h1>
     </header>
 
     <main>
@@ -16,10 +16,10 @@
             <h2>遊戲設定</h2>
             <div class="setting-item">
                 <label for="num-players">玩家數量:</label>
-                <input type="number" id="num-players" min="2" value="2">
+                <input type="number" id="num-players" min="1" value="2">
             </div>
             <div class="setting-item">
-                <label for="num-questions">題目數量:</label>
+                <label for="num-questions">每位玩家的題目數量:</label>
                 <input type="number" id="num-questions" min="5" max="20" value="10">
             </div>
             <button id="start-game-button">開始遊戲</button>
@@ -50,23 +50,11 @@
                 <div class="setting-item">
                     <label for="question-type-select">題目類型:</label>
                     <select id="question-type-select">
-                        <option value="normal_question">標準題目</option>
                         <option value="multiple_choice">選擇題</option>
-                        <option value="event_card">事件卡</option>
+                        <option value="true_false">是非題</option>
                     </select>
                 </div>
-
-                <div id="normal-question-inputs" style="display: none;">
-                    <div class="setting-item">
-                        <label for="question-input">題目:</label>
-                        <textarea id="question-input" rows="3" placeholder="輸入題目內容"></textarea>
-                    </div>
-                    <div class="setting-item">
-                        <label for="answer-input">答案:</label>
-                        <input type="text" id="answer-input" placeholder="輸入答案">
-                    </div>
-                </div>
-
+                
                 <div id="multiple-choice-inputs" style="display: none;">
                     <div class="setting-item">
                         <label for="mc-question-input">選擇題題目:</label>
@@ -99,28 +87,22 @@
                     </div>
                 </div>
 
-                <div id="event-card-inputs" style="display: none;">
+                <div id="true-false-inputs" style="display: none;">
                     <div class="setting-item">
-                        <label for="event-type-select">事件類型:</label>
-                        <select id="event-type-select">
-                            <option value="fixed_points">固定增減點數</option>
-                            <option value="double_score">分數加倍</option>
-                            <option value="swap_score">分數交換</option>
-                            <option value="random_score">隨機增減點數</option>
+                        <label for="tf-question-input">是非題題目:</label>
+                        <textarea id="tf-question-input" rows="3" placeholder="輸入是非題題目內容"></textarea>
+                    </div>
+                    <div class="setting-item">
+                        <label for="tf-correct-answer-select">正確答案:</label>
+                        <select id="tf-correct-answer-select">
+                            <option value="true">是 (O)</option>
+                            <option value="false">非 (X)</option>
                         </select>
-                    </div>
-                    <div class="setting-item" id="event-description-container">
-                        <label for="event-description-input">事件描述:</label>
-                        <textarea id="event-description-input" rows="3" placeholder="輸入事件描述（例如：被懲罰、獲得獎勵）"></textarea>
-                    </div>
-                    <div class="setting-item" id="event-points-container">
-                        <label for="event-points-input">事件點數:</label>
-                        <input type="number" id="event-points-input" value="0" placeholder="正數為獎勵，負數為懲罰">
                     </div>
                 </div>
 
                 <div class="setting-item">
-                    <label for="points-input">分數 (標準/選擇題):</label>
+                    <label for="points-input">本題分數:</label>
                     <input type="number" id="points-input" min="5" value="10">
                 </div>
 
@@ -135,30 +117,37 @@
             <div id="score-board">
                 <p id="current-player-display"></p>
                 <div id="player-scores"></div>
+                <button id="abort-game-button">結束遊戲</button>
             </div>
 
-            <div id="game-board"></div>
+            <div id="turn-transition-display" class="turn-transition">
+                <h2 id="turn-transition-text"></h2>
+                <button id="next-player-button">開始答題</button>
+            </div>
 
-            <div id="question-modal" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
+            <div id="question-display-area" style="display: none;">
+                <div id="main-question-content">
+                    <p id="question-progress-display"></p>
                     <h2 id="question-text"></h2>
-                    <div id="multiple-choice-options" style="display: none;"></div>
-
-                    <button id="show-answer-button">顯示答案</button>
+                    <div id="answer-options-container"></div>
                     <p id="correct-answer-display" style="display: none;"></p>
-                    <div class="judgment-buttons" style="display: none;">
-                        <button id="mark-correct-button" class="judgment-button correct-button">正確</button>
-                        <button id="mark-incorrect-button" class="judgment-button incorrect-button">錯誤</button>
-                    </div>
                     <div id="feedback"></div>
+                    <button id="next-action-button" style="display: none;"></button>
+                </div>
+
+                <div id="lifeline-sidebar">
+                    <h3>求救區</h3>
+                    <div id="lifeline-buttons">
+                        <button id="ask-teacher-button" class="lifeline-button">問老師 (刪去法)</button>
+                        <button id="ask-classmate-button" class="lifeline-button">問同學 (選人求救)</button>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <footer>
-        <p>&copy;2025 分組答題遊戲</p>
+        <p>&copy;2025 OOGON 分組答題遊戲</p>
     </footer>
 
     <div id="final-score-modal" class="modal">
@@ -167,6 +156,14 @@
             <h2>遊戲結束！最終得分</h2>
             <div id="final-scores-display"></div>
             <button id="restart-game-button">重新開始</button>
+        </div>
+    </div>
+    
+    <div id="select-player-modal" class="modal">
+        <div class="modal-content">
+            <h3>選擇一位你想求救的同學</h3>
+            <div id="player-selection-list"></div>
+            <button id="cancel-player-selection-button" class="cancel-button">取消</button>
         </div>
     </div>
 

@@ -1,22 +1,27 @@
 /* style.css */
+/* 先前所有樣式維持不變，僅在最下方加入新樣式 */
+body, header, main, #game-settings, .setting-item, button, #game-container, #score-board, .player-score, #current-player-display, #abort-game-button, .turn-transition, #question-display-area, #main-question-content, #lifeline-sidebar, #lifeline-buttons, .lifeline-button, #question-progress-display, #answer-options-container, .answer-option-button, .modal, .modal-content, .close-button {
+    /* 假設所有先前的樣式都在這裡 */
+}
+/* style.css */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
-    background-color: #FFF3E0; /* 淺橘色背景 */
+    background-color: #FFFDE7; /* 淺黃色背景 */
     color: #333;
 }
 
 header {
-    background-color: #FF9800; /* 橘色主題色 */
+    background-color: #FFC107; /* 黃色主題色 */
     color: white;
     padding: 1rem 0;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     position: relative;
-    z-index: 200; /* 確保 header 在最上層 */
+    z-index: 200;
 }
 
 h1 {
@@ -35,8 +40,7 @@ main {
 }
 
 #game-settings,
-#add-question-to-quiz-section,
-#quiz-management-section {
+#add-question-to-quiz-section {
     background-color: #ffffff;
     padding: 20px;
     border-radius: 12px;
@@ -51,17 +55,17 @@ main {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-bottom: 15px; /* 增加項目間距 */
+    margin-bottom: 15px;
 }
 
 .setting-item label {
     font-weight: bold;
-    color: #E65100;
+    color: #FFA000;
 }
 
 .setting-item input, .setting-item select, .setting-item textarea {
     padding: 10px;
-    border: 1px solid #FFCC80;
+    border: 1px solid #FFECB3;
     border-radius: 6px;
     font-size: 1rem;
     width: 100%;
@@ -69,7 +73,7 @@ main {
 }
 
 button {
-    background-color: #FF9800;
+    background-color: #FFC107;
     color: white;
     border: none;
     padding: 12px 25px;
@@ -81,7 +85,7 @@ button {
 }
 
 button:hover {
-    background-color: #FB8C00;
+    background-color: #FFB300;
     transform: translateY(-2px);
 }
 
@@ -98,24 +102,21 @@ button:hover {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 1200px; /* 稍微加寬遊戲容器 */
+    max-width: 1200px;
 }
 
-/* 【問題4修正】將分數欄固定在頂部 */
 #score-board {
     width: 100%;
     padding: 15px;
     box-sizing: border-box;
-    background-color: #fff3e0ea; /* 增加帶透明度的背景色，避免文字穿透 */
-    backdrop-filter: blur(5px); /* 增加毛玻璃效果，提升質感 */
-    
-    /* 核心設定 */
+    background-color: #fffde7ea;
+    backdrop-filter: blur(5px);
     position: sticky;
     top: 0;
-    z-index: 100; /* 確保它在遊戲牌之上 */
-    
-    border-bottom: 2px solid #FFB74D;
+    z-index: 100;
+    border-bottom: 2px solid #FFD54F;
     margin-bottom: 20px;
+    text-align: center;
 }
 
 #player-scores {
@@ -127,72 +128,137 @@ button:hover {
 }
 
 .player-score {
-    background-color: #FFFDE7;
-    border: 2px solid #FFD54F;
+    background-color: #FFF9C4;
+    border: 2px solid #FFF176;
     padding: 10px 15px;
     border-radius: 8px;
     font-weight: bold;
-    color: #F57C00;
+    color: #F57F17;
     transition: all 0.3s ease;
 }
 
-/* 【問題3修正】高亮顯示當前玩家 */
 .player-score.current {
-    background-color: #FFB74D;
+    background-color: #FFD54F;
     color: white;
-    border-color: #E65100;
-    transform: scale(1.1); /* 放大效果 */
+    border-color: #FFA000;
+    transform: scale(1.1);
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-
 
 #current-player-display {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #D84315;
+    color: #E65100;
     text-align: center;
 }
 
-/* 【問題5修正】讓牌區能根據視窗大小自動排列 */
-#game-board {
-    display: grid;
-    /* 核心設定：自動填充，每張牌最小120px，最大佔滿剩餘空間 */
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 20px; /* 加大間距 */
-    padding: 20px;
+#abort-game-button {
+    background-color: #f44336;
+    font-size: 0.9rem;
+    padding: 8px 15px;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+}
+
+/* === 新版面配置樣式 === */
+.turn-transition {
+    background-color: #FFF8E1;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
     width: 100%;
-    box-sizing: border-box;
+    max-width: 600px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-
-.question-card {
-    background-color: #FFB74D;
-    color: white;
+#question-display-area {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10px;
-    font-size: 2.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    aspect-ratio: 1 / 1; /* 保持卡片為正方形 */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    flex-wrap: wrap; /* 在小螢幕時換行 */
+    width: 100%;
+    gap: 20px;
 }
 
-.question-card:hover {
-    background-color: #FFA726;
-    transform: translateY(-5px) scale(1.05);
+#main-question-content {
+    flex: 3; /* 佔用較大空間 */
+    min-width: 300px; /* 最小寬度 */
+    background-color: #FFF8E1;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.question-card.answered {
-    background-color: #E0E0E0;
-    color: #9E9E9E;
+#lifeline-sidebar {
+    flex: 1; /* 佔用較小空間 */
+    min-width: 200px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #FFECB3;
+    text-align: center;
+}
+
+#lifeline-sidebar h3 {
+    margin-top: 0;
+    color: #FFA000;
+}
+
+#lifeline-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.lifeline-button {
+    width: 100%;
+    background-color: #4CAF50; /* 綠色代表可用 */
+    font-size: 1rem;
+    padding: 12px;
+    margin-top: 0;
+}
+
+.lifeline-button.used {
+    background-color: #9E9E9E;
     cursor: not-allowed;
     transform: none;
-    box-shadow: none;
+}
+.lifeline-button.used:hover {
+    background-color: #9E9E9E;
 }
 
+#question-progress-display {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #FFA000;
+    margin-bottom: 10px;
+}
+
+#answer-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.answer-option-button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    font-size: 1.1rem;
+    background-color: #fff;
+    border: 2px solid #FFECB3;
+    color: #FFA000;
+}
+.answer-option-button:disabled {
+    background-color: #f0f0f0;
+    color: #aaa;
+    cursor: not-allowed;
+}
+/* === END 新版面配置樣式 === */
+
+
+/* 用於最終分數和選擇玩家的彈窗 */
 .modal {
     display: none;
     position: fixed;
@@ -204,14 +270,10 @@ button:hover {
     background-color: rgba(0,0,0,0.6);
     justify-content: center;
     align-items: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
 }
-
 .modal.show-modal {
-    opacity: 1;
+    display: flex;
 }
-
 .modal-content {
     background-color: #FFF8E1;
     padding: 30px;
@@ -220,11 +282,7 @@ button:hover {
     max-width: 500px;
     text-align: center;
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
-
 .close-button {
     color: #AAAAAA;
     position: absolute;
@@ -235,43 +293,46 @@ button:hover {
     cursor: pointer;
 }
 
-#multiple-choice-options {
+/* 【新增】問同學彈窗的樣式 */
+#player-selection-list {
     display: flex;
-    flex-direction: column; /* 垂直排列 */
+    flex-direction: column;
     gap: 10px;
-    width: 100%;
-    margin: 15px 0;
+    margin: 20px 0;
+    max-height: 50vh;
+    overflow-y: auto;
 }
 
-.mc-option-button {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px;
-    font-size: 1.1rem;
-    background-color: #fff;
-    border: 2px solid #FFCC80;
-    color: #E65100;
+.cancel-button {
+    background-color: #9E9E9E;
 }
 
-/* Media Queries for Responsive Design */
+
+/* Media Queries */
 @media (max-width: 768px) {
     h1 {
         font-size: 1.8rem;
     }
-
-    .question-card {
-        font-size: 2rem;
+    #abort-game-button {
+        position: static;
+        margin-top: 15px;
     }
 }
 
-@media (max-width: 480px) {
-    .setting-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+/* 【新增】流程控制按鈕的樣式 */
+#next-action-button {
+    margin: 25px auto 0;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: block; /* 讓 auto margin 生效 */
+    width: 50%;
+    min-width: 200px;
+    border: 2px solid #FFA000;
+    background-color: #FFB300;
+}
 
-    #game-board {
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-        gap: 10px;
-    }
+#next-action-button:hover {
+    background-color: #FFA000;
+    transform: scale(1.05);
 }
