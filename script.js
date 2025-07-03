@@ -1,4 +1,4 @@
-// script.js (最終版 - 解決GitHub Pages渲染問題)
+// script.js (最終版 - 解決 GitHub Pages 渲染問題)
 
 // --- 遊戲狀態變數 ---
 let players = [];
@@ -18,7 +18,7 @@ const defaultQuestions = [
     { type: 'event_card', event_type: 'fixed_points', event_description: "恭喜！您獲得了額外點數！", event_points: 30 }
 ];
 
-// KaTeX 的渲染設定，明確指定標籤
+// <<< 關鍵修正：加回 KaTeX 的渲染設定 >>>
 const katexRenderOptions = {
     delimiters: [
         { left: "\\(", right: "\\)", display: false },
@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelAddQuestionButton = document.getElementById('cancel-add-question-button');
     let editingQuestionIndex = -1;
 
+    // --- 核心輔助函數 ---
     function saveQuizzes() { localStorage.setItem('allQuizzes', JSON.stringify(allQuizzes)); }
     function loadQuizzes() {
         const storedQuizzes = localStorage.getItem('allQuizzes');
@@ -395,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function markCardAsAnswered(index) { answeredQuestions.add(index); const card = document.querySelector(`.question-card[data-index="${index}"]`); if (card) { card.classList.add('answered'); } }
     function nextTurn() { if (answeredQuestions.size >= currentQuestions.length) { endGame(); return; } currentPlayerIndex = (currentPlayerIndex + 1) % players.length; updatePlayerInfo(); }
     function endGame() {
-        const finalScoreModal = document.getElementById('final-score-modal');
         finalScoreModal.style.display = 'flex'; finalScoreModal.classList.add('show-modal');
         const finalScoresDisplay = document.getElementById('final-scores-display');
         finalScoresDisplay.innerHTML = '<h2>最終得分</h2>';
