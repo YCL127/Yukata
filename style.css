@@ -231,9 +231,10 @@ button:hover {
     margin: 15px 0;
 }
 
+/* 恢復選擇題按鈕為高對比度的白底橘字樣式 */
 .mc-option-button {
     background-color: #FFFFFF;
-    color: #E65100;
+    color: #E65100; /* 主題橘色文字 */
     border: 2px solid #FFCC80;
     padding: 12px;
     width: 100%;
@@ -246,7 +247,7 @@ button:hover {
 }
 
 .mc-option-button .katex {
-    color: inherit;
+    color: inherit; /* 讓數學公式繼承按鈕的橘色文字 */
 }
 
 .mc-option-button:hover {
@@ -277,8 +278,6 @@ button:hover {
 .quiz-list-container li span {
     flex-grow: 1;
     margin-right: 10px;
-    overflow-wrap: break-word;
-    word-break: break-all;
 }
 
 .quiz-list-container .item-actions {
@@ -292,30 +291,6 @@ button:hover {
     padding: 5px 10px;
     font-size: 0.9rem;
     margin: 0;
-}
-
-.add-question-button {
-    background: #28a745;
-}
-.add-question-button:hover {
-    background: #218838;
-}
-
-#edit-quiz-modal .modal-content {
-    max-height: 85vh;
-    overflow-y: auto;
-    text-align: left;
-}
-
-#add-question-to-quiz-section h3 {
-    text-align: center;
-    width: 100%;
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-.judgment-buttons, #steal-options-container {
-    margin-top: 15px;
 }
 
 /* 響應式設計 */
