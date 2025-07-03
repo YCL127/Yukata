@@ -1,4 +1,4 @@
-// script.js (最終版 - 解決 GitHub Pages 渲染問題)
+// script.js (最終完整版 - 修復所有功能)
 
 // --- 遊戲狀態變數 ---
 let players = [];
@@ -18,7 +18,7 @@ const defaultQuestions = [
     { type: 'event_card', event_type: 'fixed_points', event_description: "恭喜！您獲得了額外點數！", event_points: 30 }
 ];
 
-// <<< 關鍵修正：加回 KaTeX 的渲染設定 >>>
+// KaTeX 的渲染設定，明確指定標籤
 const katexRenderOptions = {
     delimiters: [
         { left: "\\(", right: "\\)", display: false },
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveQuestionButton = document.getElementById('save-question-button');
     const cancelAddQuestionButton = document.getElementById('cancel-add-question-button');
     let editingQuestionIndex = -1;
-
+    
     // --- 核心輔助函數 ---
     function saveQuizzes() { localStorage.setItem('allQuizzes', JSON.stringify(allQuizzes)); }
     function loadQuizzes() {
