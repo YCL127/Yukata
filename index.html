@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yukata</title>
     <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
 </head>
 <body>
     <header>
@@ -36,10 +41,8 @@
                     <button id="import-quiz-button">匯入題庫</button>
                     <button id="export-quiz-button">匯出題庫</button>
                 </div>
-
                 <h4>當前題庫題目列表</h4>
                 <ul id="quiz-question-list" class="quiz-list-container"></ul>
-
                 <div class="button-group">
                     <button id="show-add-question-section-button" class="add-question-button">新增題目</button>
                 </div>
@@ -58,79 +61,30 @@
                         <option value="event_card">事件卡</option>
                     </select>
                 </div>
-
                 <div id="normal-question-inputs" style="display: none;">
-                    <div class="setting-item">
-                        <label for="question-input">題目:</label>
-                        <textarea id="question-input" rows="3" placeholder="輸入題目內容"></textarea>
-                    </div>
-                    <div class="setting-item">
-                        <label for="answer-input">答案:</label>
-                        <input type="text" id="answer-input" placeholder="輸入答案">
-                    </div>
+                    <div class="setting-item"><label for="question-input">題目:</label><textarea id="question-input" rows="3" placeholder="輸入題目內容"></textarea></div>
+                    <div class="setting-item"><label for="answer-input">答案:</label><input type="text" id="answer-input" placeholder="輸入答案"></div>
                 </div>
-
                 <div id="multiple-choice-inputs" style="display: none;">
-                    <div class="setting-item">
-                        <label for="mc-question-input">選擇題題目:</label>
-                        <textarea id="mc-question-input" rows="3" placeholder="輸入選擇題題目內容"></textarea>
-                    </div>
-                    <div class="setting-item">
-                        <label for="option1-input">選項 A:</label>
-                        <input type="text" id="option1-input" placeholder="選項 A">
-                    </div>
-                    <div class="setting-item">
-                        <label for="option2-input">選項 B:</label>
-                        <input type="text" id="option2-input" placeholder="選項 B">
-                    </div>
-                    <div class="setting-item">
-                        <label for="option3-input">選項 C:</label>
-                        <input type="text" id="option3-input" placeholder="選項 C">
-                    </div>
-                    <div class="setting-item">
-                        <label for="option4-input">選項 D:</label>
-                        <input type="text" id="option4-input" placeholder="選項 D">
-                    </div>
-                    <div class="setting-item">
-                        <label for="correct-option-select">正確答案:</label>
-                        <select id="correct-option-select">
-                            <option value="0">A</option>
-                            <option value="1">B</option>
-                            <option value="2">C</option>
-                            <option value="3">D</option>
-                        </select>
-                    </div>
+                    <div class="setting-item"><label for="mc-question-input">選擇題題目:</label><textarea id="mc-question-input" rows="3" placeholder="輸入選擇題題目內容"></textarea></div>
+                    <div class="setting-item"><label for="option1-input">選項 A:</label><input type="text" id="option1-input" placeholder="選項 A"></div>
+                    <div class="setting-item"><label for="option2-input">選項 B:</label><input type="text" id="option2-input" placeholder="選項 B"></div>
+                    <div class="setting-item"><label for="option3-input">選項 C:</label><input type="text" id="option3-input" placeholder="選項 C"></div>
+                    <div class="setting-item"><label for="option4-input">選項 D:</label><input type="text" id="option4-input" placeholder="選項 D"></div>
+                    <div class="setting-item"><label for="correct-option-select">正確答案:</label><select id="correct-option-select"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>
                 </div>
-
                 <div id="event-card-inputs" style="display: none;">
                     <div class="setting-item">
                         <label for="event-type-select">事件類型:</label>
                         <select id="event-type-select">
-                            <option value="fixed_points">固定增減點數</option>
-                            <option value="double_score">分數加倍</option>
-                            <option value="swap_score">分數交換</option>
-                            <option value="random_score">隨機增減點數</option>
+                            <option value="fixed_points">固定增減點數</option><option value="double_score">分數加倍</option><option value="swap_score">分數交換</option><option value="random_score">隨機增減點數</option><option value="equalize_scores">平分全場分數</option>
                         </select>
                     </div>
-                    <div class="setting-item" id="event-description-container">
-                        <label for="event-description-input">事件描述:</label>
-                        <textarea id="event-description-input" rows="3" placeholder="輸入事件描述（例如：被懲罰、獲得獎勵）"></textarea>
-                    </div>
-                    <div class="setting-item" id="event-points-container">
-                        <label for="event-points-input">事件點數:</label>
-                        <input type="number" id="event-points-input" value="0" placeholder="正數為獎勵，負數為懲罰">
-                    </div>
+                    <div class="setting-item" id="event-description-container"><label for="event-description-input">事件描述:</label><textarea id="event-description-input" rows="3" placeholder="輸入事件描述"></textarea></div>
+                    <div class="setting-item" id="event-points-container"><label for="event-points-input">事件點數:</label><input type="number" id="event-points-input" value="0" placeholder="正數獎勵，負數懲罰"></div>
                 </div>
-
-                <div class="setting-item">
-                    <label for="points-input">分數 (標準/選擇題):</label>
-                    <input type="number" id="points-input" min="5" value="10">
-                </div>
-
-                <div class="button-group">
-                    <button id="save-question-button">儲存題目</button>
-                    <button id="cancel-add-question-button">取消</button>
-                </div>
+                <div class="setting-item"><label for="points-input">分數 (標準/選擇題):</label><input type="number" id="points-input" min="5" value="10"></div>
+                <div class="button-group"><button id="save-question-button">儲存題目</button><button id="cancel-add-question-button">取消</button></div>
             </div>
         </div>
 
@@ -139,22 +93,24 @@
                 <p id="current-player-display"></p>
                 <div id="player-scores"></div>
             </div>
-
             <div id="game-board"></div>
-
             <div id="question-modal" class="modal">
                 <div class="modal-content">
                     <span class="close-button">&times;</span>
                     <h2 id="question-text"></h2>
                     <div id="multiple-choice-options" style="display: none;"></div>
-
                     <button id="show-answer-button">顯示答案</button>
                     <p id="correct-answer-display" style="display: none;"></p>
                     <div class="judgment-buttons" style="display: none;">
                         <button id="mark-correct-button" class="judgment-button correct-button">正確</button>
                         <button id="mark-incorrect-button" class="judgment-button incorrect-button">錯誤</button>
                     </div>
-                    <div id="feedback"></div>
+                    
+                    <div id="timer-display" style="font-size: 1.8rem; color: #D84315; font-weight: bold; margin-top: 20px;"></div>
+                    <button id="steal-button" style="display: none; background-color: #D84315; margin-top: 10px;">搶答!</button>
+                    <div id="steal-options-container" class="button-group" style="display: none;"></div>
+                    
+                    <div id="feedback" style="margin-top: 15px;"></div>
                 </div>
             </div>
         </div>
@@ -166,10 +122,10 @@
 
     <div id="final-score-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" id="close-final-score-modal">&times;</span>
-            <h2>遊戲結束！最終得分</h2>
-            <div id="final-scores-display"></div>
-            <button id="restart-game-button">重新開始</button>
+             <span class="close-button" id="close-final-score-modal">&times;</span>
+             <h2>遊戲結束！最終得分</h2>
+             <div id="final-scores-display"></div>
+             <button id="restart-game-button">重新開始</button>
         </div>
     </div>
 

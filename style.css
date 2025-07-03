@@ -1,22 +1,22 @@
-/* style.css */
+/* style.css (經典橘色主題版) */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     margin: 0;
-    background-color: #FFF3E0; /* 淺橘色背景 */
+    background-color: #FFF3E0; /* 恢復為淺橘色背景 */
     color: #333;
 }
 
 header {
-    background-color: #FF9800; /* 橘色主題色 */
+    background-color: #FF9800; /* 恢復為經典實心橘色 */
     color: white;
     padding: 1rem 0;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     position: relative;
-    z-index: 200; /* 確保 header 在最上層 */
+    z-index: 200;
 }
 
 h1 {
@@ -34,7 +34,6 @@ main {
     box-sizing: border-box;
 }
 
-/* 【修改2】移除 #add-question-to-quiz-section 的樣式，讓它由 modal 控制 */
 #game-settings,
 #quiz-management-section {
     background-color: #ffffff;
@@ -51,7 +50,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-bottom: 15px; /* 增加項目間距 */
+    margin-bottom: 15px;
 }
 
 .setting-item label {
@@ -69,20 +68,23 @@ main {
 }
 
 button {
-    background-color: #FF9800;
+    background-color: #FF9800; /* 按鈕恢復為實心橘色 */
     color: white;
     border: none;
     padding: 12px 25px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 1.1rem;
+    font-weight: bold;
     transition: all 0.3s ease;
     margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 button:hover {
-    background-color: #FB8C00;
+    background-color: #FB8C00; /* 滑鼠懸停時顏色加深 */
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .button-group {
@@ -98,14 +100,14 @@ button:hover {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 1200px; /* 稍微加寬遊戲容器 */
+    max-width: 900px;
 }
 
 #score-board {
     width: 100%;
     padding: 15px;
     box-sizing: border-box;
-    background-color: #fff3e0ea;
+    background-color: rgba(255, 243, 224, 0.9);
     backdrop-filter: blur(5px);
     position: sticky;
     top: 0;
@@ -140,7 +142,6 @@ button:hover {
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-
 #current-player-display {
     font-size: 1.5rem;
     font-weight: bold;
@@ -150,13 +151,12 @@ button:hover {
 
 #game-board {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 15px;
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
 }
-
 
 .question-card {
     background-color: #FFB74D;
@@ -165,7 +165,7 @@ button:hover {
     justify-content: center;
     align-items: center;
     border-radius: 10px;
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -197,12 +197,6 @@ button:hover {
     background-color: rgba(0,0,0,0.6);
     justify-content: center;
     align-items: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.modal.show-modal {
-    opacity: 1;
 }
 
 .modal-content {
@@ -210,29 +204,14 @@ button:hover {
     padding: 30px;
     border-radius: 15px;
     width: 90%;
-    max-width: 500px;
+    max-width: 550px;
     text-align: center;
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
 }
-
-/* 【修改2】為編輯表單的 modal-content 添加特定樣式 */
-#add-question-to-quiz-section.modal-content {
-    max-width: 650px;       /* 讓表單寬一點 */
-    max-height: 85vh;       /* 避免過高 */
-    overflow-y: auto;       /* 內容過多時可滾動 */
-    text-align: left;       /* 表單內元素靠左對齊 */
-}
-
-#add-question-to-quiz-section.modal-content h3 {
-    text-align: center;     /* 標題置中 */
-    width: 100%;
-    margin-top: 0;          /* 移除預設的上邊距 */
-    margin-bottom: 20px;
-}
-
 
 .close-button {
     color: #AAAAAA;
@@ -252,35 +231,82 @@ button:hover {
     margin: 15px 0;
 }
 
+/* 恢復選擇題按鈕為高對比度的白底橘字樣式 */
 .mc-option-button {
+    background-color: #FFFFFF;
+    color: #E65100; /* 主題橘色文字 */
+    border: 2px solid #FFCC80;
+    padding: 12px;
     width: 100%;
     box-sizing: border-box;
-    padding: 12px;
     font-size: 1.1rem;
-    background-color: #fff;
-    border: 2px solid #FFCC80;
-    color: #E65100;
+    font-weight: bold;
+    text-align: left;
+    transition: all 0.2s ease;
+    border-radius: 8px;
 }
 
-/* Media Queries for Responsive Design */
-@media (max-width: 768px) {
-    h1 {
-        font-size: 1.8rem;
-    }
+.mc-option-button .katex {
+    color: inherit; /* 讓數學公式繼承按鈕的橘色文字 */
+}
 
-    .question-card {
-        font-size: 2rem;
+.mc-option-button:hover {
+    background-color: #FFF8E1;
+    border-color: #FFA726;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.quiz-list-container {
+    list-style: none;
+    padding: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.quiz-list-container li {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quiz-list-container li span {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.quiz-list-container .item-actions {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.quiz-list-container .item-actions button {
+    background-color: #bbb;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    h1 { font-size: 1.8rem; }
+    #game-board {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 10px;
     }
+    .question-card { font-size: 1.5rem; }
 }
 
 @media (max-width: 480px) {
-    .setting-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
+    .setting-item { flex-direction: column; align-items: flex-start; }
     #game-board {
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 8px;
     }
 }
